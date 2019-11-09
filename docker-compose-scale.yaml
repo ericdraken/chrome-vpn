@@ -1,22 +1,29 @@
 version: '3'
 
+networks:
+  proxynet:
+    driver: bridge
+
 services:
   chrome-haproxy:
     build:
       context: haproxy
-    network_mode: service:chrome-vpn
+    networks:
+      - proxynet
+    ports:
+      - "${CHROME_RDP_PORT:-3000}:3000"
     restart: unless-stopped
     depends_on:
       - chrome-vpn
     environment:
-      FRONTEND_PORT: 3001
+      FRONTEND_PORT: 3000
       FRONTEND_MODE: "http"
       BACKENDS: "chrome-vpn"
       BACKENDS_PORT: 3000
       BACKENDS_MODE: "http"
       DNS_ENABLED: "true"
       PROXY_PROTOCOL_ENABLED: "false"
-      BALANCE: "source"
+      BALANCE: "roundrobin"
       LOG_LEVEL: "debug"
 
   chrome-vpn:
@@ -28,12 +35,10 @@ services:
       - NET_ADMIN # Needed for VPN tunnel adapter
     devices:
       - /dev/net/tun
-# PROBLEM: with docker-compose -f docker-compose-proxy.yaml up --scale chrome-vpn=3
-# The ports cannot be bound, only exposed
-#    ports:
-#      - "${CHROME_RDP_PORT:-3000}:3000"
+    networks:
+      - proxynet
     expose:
-      - 3001
+      - "${CHROME_RDP_PORT:-3000}"
     dns:
       - "${DNS_SERVER_1:-9.9.9.9}"
       - "${DNS_SERVER_2:-1.1.1.1}"
