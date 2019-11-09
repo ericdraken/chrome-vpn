@@ -1,4 +1,4 @@
-# Headless Chrome plus NordVPN 
+# Chrome+VPN
 
 A combination of headless Chrome and a VPN to force all Chrome traffic through the tunnel adapter. No more WebRTC leaks.
 This image allows the VPN server to change at regular intervals, and choose a specific country to use VPN servers from.
@@ -57,7 +57,10 @@ curl -s https://api.nordvpn.com/server | jq -c '.[] | .country' | jq -s -a -c 'u
 curl -s https://api.nordvpn.com/server | jq -c '.[] | .categories[].name' | jq -s -a -c 'unique | .[]'
 ```
 
-## Easy Docker Compose
+## Easy Setup
+
+Copy the `.env.tmpl` file to `.env` and populate. Then run `docker-compose up`. Navigate to `http://localhost:3000` to
+be treated to the Chrome debugger playground.
 
 ```yaml
 version: '3'
@@ -93,3 +96,9 @@ services:
       NETWORK: "${NETWORK:-192.168.0.0/24}"
       TZ: "${TZ:-America/Vancouver}"
 ```
+
+## Multiple simultaneous Chrome+VPN instances
+
+Run `docker-compose -f docker-compose-scale.yaml up --scale chrome-vpn=3` to launch three Chrome+VPN instances
+at random VPN servers for a round-robin VPN experience. Every time you execute a Chrome navigation, it will originate from
+a different VPN server.
