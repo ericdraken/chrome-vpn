@@ -4,10 +4,12 @@ LABEL repo="https://github.com/ericdraken/chrome-vpn"
 
 WORKDIR "/"
 
-# Switch back to root
-# Then in entrypoint call `su -p - blessuser ...`
+# Image browserless/chrome drops the user to restricted use `blessuser`.
+# Switch back to root then in the Chrome service call `su -p - blessuser ...`
 USER root
 
+# The following is a modified build script from azinchen/nordvpn
+# but modified for the Ubuntu base image instead of Alpine
 ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
     URL_RECOMMENDED_SERVERS="https://nordvpn.com/wp-admin/admin-ajax.php?action=servers_recommendations" \
     URL_OVPN_FILES="https://downloads.nordcdn.com/configs/archives/servers/ovpn.zip" \
@@ -47,4 +49,5 @@ HEALTHCHECK --start-period=10s --interval=60s --retries=3 CMD curl \
 				--output /dev/null \
 				'https://github.com/' || exit 1
 
+# Using the S6 overlay init
 ENTRYPOINT ["/init"]
