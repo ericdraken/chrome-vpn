@@ -4,7 +4,7 @@ LABEL repo="https://github.com/ericdraken/chrome-vpn"
 
 WORKDIR "/"
 
-# Image browserless/chrome drops the user to restricted use `blessuser`.
+# Image browserless/chrome drops the user to restricted user `blessuser`.
 # Switch back to root then in the Chrome service call `su -p - blessuser ...`
 USER root
 
