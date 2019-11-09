@@ -1,0 +1,5 @@
+#!/usr/bin/with-contenv bash
+
+# /usr/src/app
+cd ${APP_DIR}
+exec su -p - blessuser -c "node ./build/index.js"

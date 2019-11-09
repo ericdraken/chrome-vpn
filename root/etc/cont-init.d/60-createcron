@@ -1,0 +1,20 @@
+#!/usr/bin/with-contenv bash
+
+# Add crontab file in the cron directory in Ubuntu
+cron_file="/etc/cron.d/crontab"
+
+rm -f "$cron_file"
+touch "$cron_file"
+
+if [[ -z "${RECREATE_VPN_CRON}" ]]; then
+    echo "Create cron file"
+    echo "$RECREATE_VPN_CRON /app/reconnect.sh" > "$cron_file"
+
+    # Give execution rights on the cron job
+    chmod 0644 "$cron_file"
+
+    # Apply cron job
+    /usr/bin/crontab "$cron_file"
+fi
+
+exit 0
