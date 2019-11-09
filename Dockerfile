@@ -1,5 +1,6 @@
 FROM browserless/chrome:latest
 LABEL maintainer="ericdraken@gmail.com"
+LABEL repo="https://github.com/ericdraken/chrome-vpn"
 
 WORKDIR "/"
 
@@ -17,17 +18,12 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
 
 ADD https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-amd64.tar.gz /tmp/s6-overlay.tar.gz
 
-RUN apt-get -qq update
-
-RUN apt-get -y -qq install bash curl unzip tar iptables jq openvpn cron
-
-RUN tar xfz /tmp/s6-overlay.tar.gz -C /
-
-RUN mkdir -p /vpn && \
-    mkdir -p /ovpn
-
-# Clean up
-RUN apt-get -qq clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apt-get -qq update && \
+    apt-get -y -qq install bash curl unzip tar iptables jq openvpn cron && \
+    tar xfz /tmp/s6-overlay.tar.gz -C / && \
+    mkdir -p /vpn && \
+    mkdir -p /ovpn && \
+    apt-get -qq clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY root/ /
 

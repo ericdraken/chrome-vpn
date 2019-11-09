@@ -1,7 +1,8 @@
 version: '3'
 
 services:
-  secure-chrome:
+  chrome-vpn:
+    # image: ericdraken/chrome-vpn: latest
     build:
       context: .
     restart: unless-stopped
@@ -21,13 +22,13 @@ services:
       ## NordVPN settings ##
       VPN_USER: "$VPN_USER"
       VPN_PASS: "$VPN_PASS"
-      # curl -s https://api.nordvpn.com/server | jq -c '.[] | .country' | jq -s -a -c 'unique | .[]'
+        # curl -s https://api.nordvpn.com/server | jq -c '.[] | .country' | jq -s -a -c 'unique | .[]'
       COUNTRY: "${COUNTRY:-United States}"
-      # curl -s https://api.nordvpn.com/server | jq -c '.[] | .categories[].name' | jq -s -a -c 'unique | .[]'
+        # curl -s https://api.nordvpn.com/server | jq -c '.[] | .categories[].name' | jq -s -a -c 'unique | .[]'
       OPENVPN_OPTS: "${OPENVPN_OPTS:---pull-filter ignore \"ping-restart\" --ping-exit 180}"
       CATEGORY: "${CATEGORY:-Standard VPN servers}"
       RANDOM_TOP: "${RANDOM_TOP:-10}"
       RECREATE_VPN_CRON: "${RECREATE_VPN_CRON:-''}"
-      # Run ip route | awk '!/ (docker0|br-)/ && /src/ {print $1}'
+        # ip route | awk '!/ (docker0|br-)/ && /src/ {print $1}'
       NETWORK: "${NETWORK:-192.168.0.0/24}"
       TZ: "${TZ:-America/Vancouver}"
