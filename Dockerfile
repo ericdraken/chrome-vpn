@@ -34,4 +34,17 @@ VOLUME ["/ovpn"]
 # Expose the web-socket and HTTP ports
 EXPOSE 3000
 
+# Health check by trying to connect to GitHub with timeouts.
+# All network activity must got through the VPN, so if TUN
+# is down, then no network and the health check will fail.
+HEALTHCHECK --start-period=10s --interval=60s --retries=3 CMD curl \
+				--connect-timeout 10 \
+				--max-time 20 \
+				--head \
+				--fail \
+				--silent \
+				--show-error \
+				--output /dev/null \
+				'https://github.com/' || exit 1
+
 ENTRYPOINT ["/init"]
