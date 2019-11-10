@@ -9,10 +9,7 @@ config_file="$base_dir/config.ovpn"
 
 if [[ -z "$VPN_USER" || -z "$VPN_PASS" ]]; then
   echo "VPN user or password is empty. Exiting."
-  # Force the container to stop
-  # REF: https://skarnet.org/software/s6/s6-svscanctl.html
-  s6-svscanctl -t /var/run/s6/services
-  exit 1;
+  exit 1
 fi
 
 # Create auth_file

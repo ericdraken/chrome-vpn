@@ -4,4 +4,22 @@ base_dir="/vpn"
 auth_file="$base_dir/auth"
 config_file="$base_dir/config.ovpn"
 
-exec openvpn --cd "$base_dir" --config "$config_file" --auth-user-pass "$auth_file" --auth-nocache ${OPENVPN_OPTS}
+# On set up errors, the config file will not be created
+if [[ ! -f "$config_file" ]]; then
+	echo "VPN config file not present. Exiting."
+	exit 1
+fi
+
+# Start the VPN service, and watch the stdout/stderr
+# logs for authentication failures. If found, kill the container.
+exec openvpn --cd "$base_dir" \
+	--config "$config_file" \
+	--auth-user-pass "$auth_file" \
+	--auth-nocache ${OPENVPN_OPTS} \
+	2>&1 | tee >( \
+		grep --line-buffered 'AUTH_FAILED' | \
+		while read; do \
+			echo "Authentication failed. Exiting."; \
+			s6-svscanctl -t /var/run/s6/services; \
+		done \
+	)

@@ -21,10 +21,13 @@ services:
       BACKENDS: "chrome-vpn"
       BACKENDS_PORT: 3000
       BACKENDS_MODE: "http"
-      DNS_ENABLED: "true"
+      DNS_ENABLED: "false"
       PROXY_PROTOCOL_ENABLED: "false"
-      BALANCE: "roundrobin"
-      LOG_LEVEL: "debug"
+      BALANCE: "source"
+      LOG_LEVEL: "warning" # emerg,alert,crit,err,warning,notice,info,debug
+      TIMEOUT_CONNECT: 10000
+      TIMEOUT_SERVER: 30000
+      HTTPCHK: "HEAD /"
 
   chrome-vpn:
     # image: ericdraken/chrome-vpn: latest
