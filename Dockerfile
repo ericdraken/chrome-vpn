@@ -18,19 +18,32 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
     RANDOM_TOP=0 \
     OPENVPN_OPTS=""
 
-ADD https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-amd64.tar.gz /tmp/s6-overlay.tar.gz
-
+# Install Ubuntu packages
 RUN apt-get -qq update && \
     apt-get -y -qq install bash curl unzip tar iptables jq openvpn cron && \
-    tar xfz /tmp/s6-overlay.tar.gz -C / && \
-    mkdir -p /vpn && \
-    mkdir -p /ovpn && \
     apt-get -qq clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Make folders to hold VPN config information
+RUN mkdir -p /vpn && \
+    mkdir -p /ovpn
+
+# Get the s6 process supervisor
+ARG S6_FILE=s6-overlay-amd64.tar.gz
+ARG S6_VERSION=v1.22.1.0
+ADD https://github.com/just-containers/s6-overlay/releases/download/$S6_VERSION/$S6_FILE /tmp/
+
+# Verify the s6 file signature
+ADD https://github.com/just-containers/s6-overlay/releases/download/$S6_VERSION/$S6_FILE.sig /tmp/
+ADD https://keybase.io/justcontainers/key.asc /tmp/
+RUN gpg --import /tmp/key.asc 2>&1
+RUN gpg --verify /tmp/$S6_FILE.sig /tmp/$S6_FILE 2>&1
+RUN tar xfz /tmp/$S6_FILE -C /
 
 COPY root/ /
 
 RUN chmod +x /app/*
 
+# Reuse a volume to prevent downloading VPN configs over and over again
 VOLUME ["/ovpn"]
 
 # Expose the web-socket and HTTP ports
@@ -49,5 +62,5 @@ HEALTHCHECK --start-period=10s --interval=60s --retries=3 CMD curl \
 				--output /dev/null \
 				'https://github.com/' || exit 1
 
-# Using the S6 overlay init
+# Using the S6 supervisor
 ENTRYPOINT ["/init"]
