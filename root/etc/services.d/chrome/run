@@ -2,4 +2,6 @@
 
 # /usr/src/app
 cd ${APP_DIR}
-exec su -p - blessuser -c "node ./build/index.js"
+
+# Drop down to the unprivileged Chrome user
+exec s6-setuidgid blessuser node ./build/index.js

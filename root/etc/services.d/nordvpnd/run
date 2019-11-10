@@ -4,4 +4,10 @@ base_dir="/vpn"
 auth_file="$base_dir/auth"
 config_file="$base_dir/config.ovpn"
 
+# On set up errors, the config file will not be created
+if [[ ! -f "$config_file" ]]; then
+	echo "VPN config file not present. Exiting."
+	exit 1
+fi
+
 exec openvpn --cd "$base_dir" --config "$config_file" --auth-user-pass "$auth_file" --auth-nocache ${OPENVPN_OPTS}
