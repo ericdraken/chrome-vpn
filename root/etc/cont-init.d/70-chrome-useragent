@@ -1,0 +1,34 @@
+#!/usr/bin/with-contenv bash
+
+# Remove 'Headless' from the default User Agent string
+if [[ ! $DEFAULT_LAUNCH_ARGS =~ "--user-agent=" ]]; then
+  version_json="${APP_DIR}/version.json"
+
+  echo "Sanitizing the Chrome User-Agent string."
+  sed -i 's/HeadlessChrome/Chrome/g' $version_json
+
+  cat $version_json
+  echo ""
+
+  # Get the User Agent string from the modified version file
+  USER_AGENT=$(jq .[\"User-Agent\"] $version_json | sed "s/\"//g")
+
+  echo "Setting default User-Agent to: $USER_AGENT"
+
+  # Note: do not use quotes around the UA string
+  # With s6, environment variables are saved to disk and recalled via 'with-contenv'
+  ARG_FILE=/var/run/s6/container_environment/DEFAULT_LAUNCH_ARGS
+  if [[ -z $DEFAULT_LAUNCH_ARGS ]]; then
+    # The spaces are important to Chrome
+    printf "[ \"--user-agent=$USER_AGENT\" ]" >$ARG_FILE
+  else
+    # Prepend the UA arg
+    if [[ $DEFAULT_LAUNCH_ARGS == "[ "* ]]; then
+      OLD_ARGS=${DEFAULT_LAUNCH_ARGS:2}
+      printf "[ \"--user-agent=$USER_AGENT\", " >$ARG_FILE
+      printf "$OLD_ARGS" >>$ARG_FILE
+    else
+      echo "Warning: Unable to understand the DEFAULT_LAUNCH_ARGS"
+    fi
+  fi
+fi

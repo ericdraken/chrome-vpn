@@ -1,0 +1,25 @@
+#!/usr/bin/with-contenv bash
+
+# Add the Accept-Languages header to match desktop Chrome
+
+# Note: do not use quotes around the Accept Languages string
+# With s6, environment variables are saved to disk and recalled via 'with-contenv'
+ARG_FILE=/var/run/s6/container_environment/DEFAULT_LAUNCH_ARGS
+LANG="en-US,en;q=0.9"
+
+echo "Setting Accept-Languages to: $LANG"
+if [[ -z $DEFAULT_LAUNCH_ARGS ]]; then
+  # The spaces are important to Chrome
+  printf "[ \"--lang=$LANG\" ]" >$ARG_FILE
+else
+  # Prepend the Accept Languages arg
+  if [[ $DEFAULT_LAUNCH_ARGS == "[ "* ]]; then
+    OLD_ARGS=${DEFAULT_LAUNCH_ARGS:2}
+    printf "[ \"--lang=$LANG\", " >$ARG_FILE
+    printf "$OLD_ARGS" >>$ARG_FILE
+  else
+    echo "Warning: Unable to understand the DEFAULT_LAUNCH_ARGS"
+  fi
+fi
+
+env
