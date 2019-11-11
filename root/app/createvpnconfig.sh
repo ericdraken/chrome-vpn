@@ -2,6 +2,16 @@
 
 echo "Select NordVPN server and create config file"
 
+if [ ! -d "/dev/net" ]; then
+  echo "$(date '+%c') Creating network device classification in /dev"
+  mkdir /dev/net
+fi
+
+if [ ! -c "/dev/net/tun" ]; then
+  echo "$(date '+%c') Creating VPN tunnel adapter"
+  mknod -m 0666 /dev/net/tun c 10 200
+fi
+
 base_dir="/vpn"
 ovpn_dir="/ovpn"
 auth_file="$base_dir/auth"

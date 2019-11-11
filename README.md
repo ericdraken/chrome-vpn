@@ -71,8 +71,6 @@ services:
     restart: unless-stopped
     cap_add:
       - NET_ADMIN # Needed for VPN tunnel adapter
-    devices:
-      - /dev/net/tun
     ports:
       - "${CHROME_RDP_PORT:-3000}:3000"
     dns:
