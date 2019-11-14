@@ -10,6 +10,7 @@ services:
       - NET_ADMIN # Needed for VPN tunnel adapter
     ports:
       - "${CHROME_RDP_PORT:-3000}:3000"
+      - "${PROXY_PORT:-3001}:3001"
     dns:
       - "${DNS_SERVER_1:-9.9.9.9}"
       - "${DNS_SERVER_2:-1.1.1.1}"

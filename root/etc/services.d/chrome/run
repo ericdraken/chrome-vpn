@@ -4,4 +4,5 @@
 cd ${APP_DIR}
 
 # Drop down to the unprivileged Chrome user
+echo "Starting Chrome"
 exec s6-setuidgid blessuser node ./build/index.js

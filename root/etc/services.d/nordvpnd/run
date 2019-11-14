@@ -12,6 +12,7 @@ fi
 
 # Start the VPN service, and watch the stdout/stderr
 # logs for authentication failures. If found, kill the container.
+echo "Starting NordVPN"
 exec openvpn --cd "$base_dir" \
 	--config "$config_file" \
 	--auth-user-pass "$auth_file" \
