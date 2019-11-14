@@ -100,3 +100,7 @@ services:
 Run `docker-compose -f docker-compose-scale.yaml up --scale chrome-vpn=3` to launch three Chrome+VPN instances
 at random VPN servers for a round-robin VPN experience. Every time you execute a Chrome navigation, it will originate from
 a different VPN server.
+
+## Chrome version
+
+You can query `http://host:port/json/version` to return the contents of `version.json` which contain the Chrome version and default User-Agent string.
