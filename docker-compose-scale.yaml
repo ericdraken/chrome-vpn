@@ -44,9 +44,6 @@ services:
       - "${DNS_SERVER_1:-9.9.9.9}"
       - "${DNS_SERVER_2:-1.1.1.1}"
     environment:
-      ## Chrome settings ##
-      USE_CHROME_STABLE: 'true'
-      FUNCTION_ENABLE_INCOGNITO_MODE: 'true'
       ## NordVPN settings ##
       VPN_USER: "$VPN_USER"
       VPN_PASS: "$VPN_PASS"

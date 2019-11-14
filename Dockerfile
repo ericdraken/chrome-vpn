@@ -2,11 +2,14 @@ FROM browserless/chrome:latest
 LABEL maintainer="ericdraken@gmail.com"
 LABEL repo="https://github.com/ericdraken/chrome-vpn"
 
-WORKDIR "/"
-
 # Image browserless/chrome drops the user to restricted user `blessuser`.
 # Switch back to root then in the Chrome service call `su -p - blessuser ...`
 USER root
+
+# Remove dumb-init from Chrome
+RUN rm -f /usr/local/bin/dumb-init
+
+WORKDIR "/"
 
 # The following is a modified build script from azinchen/nordvpn
 # but modified for the Ubuntu base image instead of Alpine
