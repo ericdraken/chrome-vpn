@@ -19,7 +19,9 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
     PROTOCOL=openvpn_udp \
     MAX_LOAD=70 \
     RANDOM_TOP=0 \
-    OPENVPN_OPTS=""
+    OPENVPN_OPTS="" \
+    MIN_RANDOM_SLEEP=2 \
+    MAX_RANDOM_SLEEP=5
 
 # Install Ubuntu packages
 RUN apt-get -qq update && \
