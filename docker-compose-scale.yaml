@@ -17,17 +17,26 @@ services:
       - chrome-vpn
     environment:
       FRONTEND_PORT: 3000
-      FRONTEND_MODE: "http"
       BACKENDS: "chrome-vpn"
       BACKENDS_PORT: 3000
+      BALANCE: "roundrobin"
+
+  proxy-haproxy:
+    build:
+      context: haproxy
+    networks:
+      - proxynet
+    ports:
+      - "${PROXY_PORT:-3001}:3001"
+    restart: unless-stopped
+    depends_on:
+      - chrome-vpn
+    environment:
+      FRONTEND_PORT: 3001
+      BACKENDS: "chrome-vpn"
+      BACKENDS_PORT: 3001
       BACKENDS_MODE: "http"
-      DNS_ENABLED: "false"
-      PROXY_PROTOCOL_ENABLED: "false"
-      BALANCE: "source"
-      LOG_LEVEL: "warning" # emerg,alert,crit,err,warning,notice,info,debug
-      TIMEOUT_CONNECT: 10000
-      TIMEOUT_SERVER: 30000
-      HTTPCHK: "HEAD /"
+      BALANCE: "roundrobin"
 
   chrome-vpn:
     # image: ericdraken/chrome-vpn: latest
@@ -39,7 +48,8 @@ services:
     networks:
       - proxynet
     expose:
-      - "${CHROME_RDP_PORT:-3000}"
+      - 3000
+      - 3001
     dns:
       - "${DNS_SERVER_1:-9.9.9.9}"
       - "${DNS_SERVER_2:-1.1.1.1}"
