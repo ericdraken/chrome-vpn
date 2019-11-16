@@ -1,0 +1,8 @@
+#!/usr/bin/with-contenv bash
+
+# Return traffic that went through VPN works
+gw=$(ip route | awk '/default/ {print $3}')
+ip route add to ${NETWORK} via $gw dev eth0
+
+echo "Starting Privoxy"
+exec privoxy --no-daemon

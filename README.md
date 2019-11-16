@@ -60,7 +60,7 @@ curl -s https://api.nordvpn.com/server | jq -c '.[] | .categories[].name' | jq -
 ## Easy Setup
 
 Copy the `.env.tmpl` file to `.env` and populate. Then run `docker-compose up`. Navigate to `http://localhost:3000` to
-be treated to the Chrome debugger playground.
+be treated to the Chrome debugger playground. If you need to bypass Chrome, you can use port 3001 as the proxy port.
 
 ```yaml
 version: '3'
@@ -73,6 +73,7 @@ services:
       - NET_ADMIN # Needed for VPN tunnel adapter
     ports:
       - "${CHROME_RDP_PORT:-3000}:3000"
+      - "${PROXY_PORT:-3001}:3001"
     dns:
       - "${DNS_SERVER_1:-9.9.9.9}"
       - "${DNS_SERVER_2:-1.1.1.1}"

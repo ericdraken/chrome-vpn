@@ -10,8 +10,13 @@ if [[ ! -f "$config_file" ]]; then
 	exit 1
 fi
 
+random_sleep=$( shuf -i $MIN_RANDOM_SLEEP-$MAX_RANDOM_SLEEP -n 1 )s
+echo "Delaying VPN startup for $random_sleep"
+sleep $random_sleep
+
 # Start the VPN service, and watch the stdout/stderr
 # logs for authentication failures. If found, kill the container.
+echo "Starting NordVPN"
 exec openvpn --cd "$base_dir" \
 	--config "$config_file" \
 	--auth-user-pass "$auth_file" \

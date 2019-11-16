@@ -19,11 +19,13 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
     PROTOCOL=openvpn_udp \
     MAX_LOAD=70 \
     RANDOM_TOP=0 \
-    OPENVPN_OPTS=""
+    OPENVPN_OPTS="" \
+    MIN_RANDOM_SLEEP=2 \
+    MAX_RANDOM_SLEEP=5
 
 # Install Ubuntu packages
 RUN apt-get -qq update && \
-    apt-get -y -qq install bash curl unzip tar iptables jq openvpn cron && \
+    apt-get -y -qq install bash curl unzip tar iptables jq openvpn cron privoxy && \
     apt-get -qq clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Make folders to hold VPN config information
@@ -49,8 +51,9 @@ RUN chmod +x /app/*
 # Reuse a volume to prevent downloading VPN configs over and over again
 VOLUME ["/ovpn"]
 
-# Expose the web-socket and HTTP ports
+# Expose the web-socket, HTTP ports, and proxy ports
 EXPOSE 3000
+EXPOSE 3001
 
 # Health check by trying to connect to GitHub with timeouts.
 # All network activity must go through the VPN, so if TUN
