@@ -14,7 +14,6 @@ FRONTEND_MODE = os.environ.get('FRONTEND_MODE', 'http')
 BACKEND_NAME = os.environ.get('BACKEND_NAME', 'http-backend')
 BALANCE = os.environ.get('BALANCE', 'roundrobin')
 SERVICE_NAMES = os.environ.get('SERVICE_NAMES', '')
-COOKIES_ENABLED = (os.environ.get('COOKIES_ENABLED', 'false').lower() == "true")
 PROXY_PROTOCOL_ENABLED = (os.environ.get('PROXY_PROTOCOL_ENABLED', 'false').lower() == "true")
 STATS_PORT = os.environ.get('STATS_PORT', '1936')
 STATS_AUTH = os.environ.get('STATS_AUTH', 'admin:admin')
@@ -52,28 +51,11 @@ frontend_conf = Template("""
     default_backend $backend
 """)
 
-if COOKIES_ENABLED:
-    #if we choose to enable session stickiness
-    #then insert a cookie named SRV_ID to the request:
-    #all responses from HAProxy to the client will contain a Set-Cookie:
-    #header with a specific value for each backend server as its cookie value.
-    backend_conf = Template("""
-  backend $backend
-    mode $mode
-    balance $balance
-    option forwardfor
-    http-request set-header X-Forwarded-Port %[dst_port]
-    http-request add-header X-Forwarded-Proto https if { ssl_fc }
-    option httpchk $httpchk HTTP/1.1\\r\\nHost:localhost
-    default-server inter $inter fastinter $fastinter downinter $downinter fall $fall rise $rise
-    cookie SRV_ID insert
-""")
-    cookies = "cookie \\\"@@value@@\\\""
-else:
-    #the old template and behaviour for backward compatibility
-    #in this case the cookie will not be set - see below the value for
-    #cookies variable (is set to empty)
-    backend_conf = Template("""
+#if we choose to enable session stickiness
+#then insert a cookie named VPN_ID to the request:
+#all responses from HAProxy to the client will contain a Set-Cookie:
+#header with a specific value for each backend server as its cookie value.
+backend_conf = Template("""
   backend $backend
     mode $mode
     balance $balance
@@ -81,10 +63,10 @@ else:
     # http-request set-header X-Forwarded-Port %[dst_port]
     # http-request add-header X-Forwarded-Proto https if { ssl_fc }
     # option httpchk $httpchk HTTP/1.1\\r\\nHost:localhost
-    # default-server inter $inter fastinter $fastinter downinter $downinter fall $fall rise $rise
-    # cookie SRV_ID prefix
+    default-server inter $inter fastinter $fastinter downinter $downinter fall $fall rise $rise
+    cookie VPN_ID insert indirect nocache
 """)
-    cookies = ""
+cookies = "cookie \\\"@@value@@\\\""
 
 backend_conf_plus = Template("""
     server $name-$index $host:$port $cookies check

@@ -17,9 +17,8 @@ services:
       - chrome-vpn
     environment:
       FRONTEND_PORT: 3000
-      BACKENDS: "chrome-vpn"
       BACKENDS_PORT: 3000
-      BALANCE: "roundrobin"
+      BACKENDS: "chrome-vpn"
 
   proxy-haproxy:
     build:
@@ -33,10 +32,8 @@ services:
       - chrome-vpn
     environment:
       FRONTEND_PORT: 3001
-      BACKENDS: "chrome-vpn"
       BACKENDS_PORT: 3001
-      BACKENDS_MODE: "http"
-      BALANCE: "roundrobin"
+      BACKENDS: "chrome-vpn"
 
   chrome-vpn:
     # image: ericdraken/chrome-vpn: latest
