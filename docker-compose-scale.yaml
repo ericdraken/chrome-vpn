@@ -64,3 +64,12 @@ services:
         # ip route | awk '!/ (docker0|br-)/ && /src/ {print $1}'
       NETWORK: "${NETWORK:-192.168.0.0/24}"
       TZ: "${TZ:-America/Vancouver}"
+
+  http-echo:
+    build:
+      context: http-echo
+    restart: unless-stopped
+    networks:
+      - proxynet
+    ports:
+      - "${ECHO_PORT:-8080}:8080"

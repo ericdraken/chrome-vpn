@@ -1,0 +1,25 @@
+{
+  "name": "@hoepfnerj/http-echo",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hoepfnerj/docker-http-echo"
+  },
+  "version": "1.0.0",
+  "description": "JSON service for debugging a web setup",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "hoepfnerj",
+  "license": "BSD-3-Clause",
+  "engines": {
+    "node": ">=6.3.0"
+  },
+  "dependencies": {
+    "concat-stream": "1.6.0",
+    "express": "4.16.2",
+    "jsonwebtoken": "8.1.0",
+    "morgan": "1.9.0"
+  }
+}
