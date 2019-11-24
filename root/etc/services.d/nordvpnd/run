@@ -24,11 +24,11 @@ exec openvpn --cd "$base_dir" \
 	2>&1 | tee >( \
 		grep --line-buffered 'AUTH_FAILED' | \
 		while read; do \
-			echo "" \
+			echo ""; \
 			echo "***********************************"; \
 			echo "* Authentication failed. Exiting. *"; \
 			echo "***********************************"; \
-			echo "" \
+			echo ""; \
 			s6-svscanctl -t /var/run/s6/services; \
 		done \
 	)
