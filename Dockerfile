@@ -48,6 +48,9 @@ COPY root/ /
 
 RUN chmod +x /app/*
 
+# Install the Node actuator
+RUN npm --prefix /app/actuator install
+
 # Reuse a volume to prevent downloading VPN configs over and over again
 VOLUME ["/ovpn"]
 
@@ -66,7 +69,7 @@ HEALTHCHECK --start-period=10s --interval=60s --retries=3 CMD curl \
 				--silent \
 				--show-error \
 				--output /dev/null \
-				'https://github.com/' || exit 1
+				'https://1.1.1.1/' || exit 1
 
 # Using the S6 supervisor
 ENTRYPOINT ["/init"]

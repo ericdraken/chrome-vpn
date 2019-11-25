@@ -1,0 +1,95 @@
+/*
+ * Copyright (c) 2019. Eric Draken - ericdraken.com
+ */
+
+const express = require('express');
+const process = require('process'); // Explicit, because, why not?
+const child = require('child_process');
+const app = express();
+
+function shellcmd( cmd, res ){
+    child.exec(cmd, function (err, stdout, stderr) {
+        if (err) {
+            console.log("\n" + stderr);
+            res.end(stderr);
+        } else {
+            console.log("Shell command response: " + stdout);
+            res.end(stdout);
+        }
+    });
+}
+
+app.get('/', function(req, res) {
+    res.writeHead(200, {"Content-Type": "text/plain"});
+    res.end("Use one of these endpoints: /status, /up, /ip, /ipinfo, /region, /randomvpn");
+});
+
+// Get the VPN service status, up = 1, down = 0
+app.get('/status', function(req, res) {
+    res.writeHead(200, {"Content-Type": "text/plain"});
+    shellcmd( 'service openvpn status ; echo $(($? == 0))', res );
+});
+
+// Get the VPN connectivity status, up = 1, down = 0
+app.get('/up', function(req, res) {
+    res.writeHead(200, {"Content-Type": "text/plain"});
+    shellcmd( '' +
+        'curl ' +
+        '--connect-timeout 20 ' +
+        '--max-time 30 ' +
+        '--head ' +
+        '--fail ' +
+        '--silent ' +
+        '--output /dev/null ' +
+        'https://1.1.1.1/ 2>/dev/null ; echo $(($? == 0))', res );
+});
+
+// Get the current VPN exit IP
+app.get('/ip', function(req, res) {
+    res.writeHead(200, {"Content-Type": "text/plain"});
+    shellcmd( 'curl http://ipinfo.io/ip', res );
+});
+
+// Get the current VPN exit IP
+app.get('/ipinfo', function(req, res) {
+    res.writeHead(200, {"Content-Type": "text/plain"});
+    shellcmd( 'curl http://ipinfo.io/', res );
+});
+
+// Get the current VPN region (province or state)
+app.get('/region', function(req, res) {
+    res.writeHead(200, {"Content-Type": "text/plain"});
+    shellcmd( 'curl http://ipinfo.io/region', res );
+});
+
+app.get('/randomvpn', function(req, res) {
+    res.writeHead(200, {"Content-Type": "text/plain"});
+    shellcmd( '/app/randomvpn.sh', res );
+});
+
+// Handle 404
+app.use(function(req, res) {
+    res.status(404).send('404: Route not Found');
+});
+
+// Handle 500
+app.use(function(error, req, res, next) {
+    res.status(500).send('500: Internal Server Error');
+});
+
+const server = app.listen(8080);
+
+process.on('exit', function () {
+    console.log('Got exit event. Trying to stop Express server.');
+    app.close(function() {
+        console.log("Express server closed");
+    });
+});
+
+process.on('SIGINT', function() {
+    console.log('Got SIGINT. Trying to exit gracefully.');
+    server.close(function() {
+        console.log("Express server closed. Asking process to exit.");
+        process.exit()
+    });
+});

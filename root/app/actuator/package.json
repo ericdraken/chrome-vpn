@@ -1,0 +1,15 @@
+{
+  "name": "chrome-vpn-actuator",
+  "version": "1.0.0",
+  "description": "Chrome+VPN actuator",
+  "author": "Eric Draken <ericdraken@gmail.com>",
+  "main": "server.js",
+  "license" : "GNU General Public License (GPL)",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}

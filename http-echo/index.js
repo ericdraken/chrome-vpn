@@ -1,7 +1,7 @@
-var express = require('express')
+var express = require('express');
 const morgan = require('morgan');
-var http = require('http')
-var app = express()
+var http = require('http');
+var app = express();
 const os = require('os');
 const jwt = require('jsonwebtoken');
 var concat = require('concat-stream');
@@ -41,17 +41,16 @@ app.all('*', (req, res) => {
     if (!token) {
       echo.jwt = token;
     } else {
-      const decoded = jwt.decode(token, {complete: true});
-      echo.jwt = decoded;
+      echo.jwt = jwt.decode(token, {complete: true});
     }
   }
   res.json(echo);
-  console.log('-----------------')
+  console.log('-----------------');
   console.log(echo);
 });
 
 http.createServer(app).listen(8080);
-console.log('-- Server Listening --')
+console.log('-- Server Listening --');
 
 let calledClose = false;
 
@@ -68,6 +67,6 @@ process.on('SIGINT', function() {
   calledClose = true;
   server.close(function() {
     console.log("Express server closed. Asking process to exit.");
-    process.exit()
+    process.exit();
   });
 });
