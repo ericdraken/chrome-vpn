@@ -21,7 +21,8 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
     RANDOM_TOP=0 \
     OPENVPN_OPTS="" \
     MIN_RANDOM_SLEEP=2 \
-    MAX_RANDOM_SLEEP=5
+    MAX_RANDOM_SLEEP=5 \
+    TEST_URL="https://1.1.1.1/"
 
 # Install Ubuntu packages
 RUN apt-get -qq update && \
@@ -69,7 +70,7 @@ HEALTHCHECK --start-period=10s --interval=60s --retries=3 CMD curl \
 				--silent \
 				--show-error \
 				--output /dev/null \
-				'https://1.1.1.1/' || exit 1
+				$TEST_URL || exit 1
 
 # Using the S6 supervisor
 ENTRYPOINT ["/init"]

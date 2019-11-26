@@ -15,7 +15,6 @@ services:
       - "${DNS_SERVER_1:-9.9.9.9}"
       - "${DNS_SERVER_2:-1.1.1.1}"
     environment:
-      ## NordVPN settings ##
       VPN_USER: "$VPN_USER"
       VPN_PASS: "$VPN_PASS"
         # curl -s https://api.nordvpn.com/server | jq -c '.[] | .country' | jq -s -a -c 'unique | .[]'
@@ -28,3 +27,4 @@ services:
         # ip route | awk '!/ (docker0|br-)/ && /src/ {print $1}'
       NETWORK: "${NETWORK:-192.168.0.0/24}"
       TZ: "${TZ:-America/Vancouver}"
+      TEST_URL: "${TEST_URL:-https://1.1.1.1/}"

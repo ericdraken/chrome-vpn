@@ -41,7 +41,7 @@ app.get('/up', function(req, res) {
         '--fail ' +
         '--silent ' +
         '--output /dev/null ' +
-        'https://1.1.1.1/ 2>/dev/null ; echo $(($? == 0))', res );
+        '$TEST_URL 2>/dev/null ; echo $(($? == 0))', res );
 });
 
 // Get the current VPN exit IP
@@ -77,7 +77,7 @@ app.use(function(error, req, res, next) {
     res.status(500).send('500: Internal Server Error');
 });
 
-const server = app.listen(8080);
+const server = app.listen(80);
 
 process.on('exit', function () {
     console.log('Got exit event. Trying to stop Express server.');
