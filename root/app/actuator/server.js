@@ -80,7 +80,10 @@ app.get('/randomvpn', function (req, res) {
 // Kill the container completely
 app.get('/kill', function (req, res) {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    shellcmd('s6-svscanctl -t /var/run/s6/services', res);
+    res.end('ok');
+    child.exec('s6-svscanctl -t /var/run/s6/services', function (err, stdout, stderr) {
+        console.log( !!err ? stderr : stdout);
+    });
 });
 
 // Handle 404
