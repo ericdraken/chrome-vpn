@@ -42,6 +42,8 @@ Container images are configured using environment variables passed at runtime.
  * `NETWORK`           - CIDR network (IE 192.168.1.0/24), add a route to allows replies once the VPN is up.
  * `NETWORK6`          - CIDR IPv6 network (IE fe00:d34d:b33f::/64), add a route to allows replies once the VPN is up.
  * `OPENVPN_OPTS`      - Used to pass extra parameters to openvpn [full list](https://openvpn.net/community-resources/reference-manual-for-openvpn-2-4/).
+ * `TZ`                - Timezone string to use in the Docker container.
+ * `TEST_URL`          - URL for the health checks and testing VPN connectivity.
 
 ## Environment variable's keywords
 
@@ -78,10 +80,6 @@ services:
       - "${DNS_SERVER_1:-9.9.9.9}"
       - "${DNS_SERVER_2:-1.1.1.1}"
     environment:
-      ## Chrome settings ##
-      USE_CHROME_STABLE: 'true'
-      FUNCTION_ENABLE_INCOGNITO_MODE: 'true'
-      ## NordVPN settings ##
       VPN_USER: "$VPN_USER"
       VPN_PASS: "$VPN_PASS"
         # curl -s https://api.nordvpn.com/server | jq -c '.[] | .country' | jq -s -a -c 'unique | .[]'
@@ -94,6 +92,7 @@ services:
         # ip route | awk '!/ (docker0|br-)/ && /src/ {print $1}'
       NETWORK: "${NETWORK:-192.168.0.0/24}"
       TZ: "${TZ:-America/Vancouver}"
+      TEST_URL: "${TEST_URL:-https://1.1.1.1/}"
 ```
 
 ## Multiple simultaneous Chrome+VPN instances
@@ -105,3 +104,18 @@ a different VPN server.
 ## Chrome version
 
 You can query `http://host:port/json/version` to return the contents of `version.json` which contain the Chrome version and default User-Agent string.
+
+## Actuators
+
+You can query these localhost:8080 actuator endpoints for status updates and to restart the VPN client:
+
+* `/status` - Is the VPN client running?
+* `/up` - Can the TEST_URL be curled for a 200-response?
+* `/ip` - Get the current external IP
+* `/ipinfo` - Get the ipinfo.io JSON response
+* `/region` - Get the region of the VPN exit node
+* `/randomvpn` - Restart the VPN client and wait until `/up` is successful: 'ok' or 'failed'
+* `/kill` - Kill the container completely
+
+Actuator endpoints are best hit when using the port 3001 proxy into the container rather than directly trying
+to bind port 8080 to a host port for security purposes.
