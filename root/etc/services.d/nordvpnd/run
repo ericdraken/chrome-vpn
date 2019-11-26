@@ -9,7 +9,7 @@ echo "Delaying VPN startup for $random_sleep"
 sleep $random_sleep
 
 # Find a random server
-/app/createvpnconfig.sh
+/app/createvpnconfig.sh || exit 1
 
 # On set up errors, the config file will not be created
 if [[ ! -f "$config_file" ]]; then

@@ -3,11 +3,12 @@
  */
 
 const express = require('express');
+const basicAuth = require('express-basic-auth');
 const process = require('process'); // Explicit, because, why not?
 const child = require('child_process');
 const app = express();
 
-function shellcmd( cmd, res ){
+function shellcmd(cmd, res) {
     child.exec(cmd, function (err, stdout, stderr) {
         if (err) {
             console.log("\n" + stderr);
@@ -19,21 +20,29 @@ function shellcmd( cmd, res ){
     });
 }
 
-app.get('/', function(req, res) {
+app.use(basicAuth({
+    users: {admin: !!process.env.ACTUATOR_PASS ? process.env.ACTUATOR_PASS : 'admin'},
+    challenge: true,
+    unauthorizedResponse: (req) => {
+        return 'Unauthorized';
+    }
+}));
+
+app.get('/', function (req, res) {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    res.end("Use one of these endpoints: /status, /up, /ip, /ipinfo, /region, /randomvpn");
+    res.end("Use one of these endpoints: /status, /up, /ip, /ipinfo, /region, /randomvpn, or /kill");
 });
 
 // Get the VPN service status, up = 1, down = 0
-app.get('/status', function(req, res) {
+app.get('/status', function (req, res) {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    shellcmd( 'service openvpn status ; echo $(($? == 0))', res );
+    shellcmd('service openvpn status ; echo $(($? == 0))', res);
 });
 
 // Get the VPN connectivity status, up = 1, down = 0
-app.get('/up', function(req, res) {
+app.get('/up', function (req, res) {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    shellcmd( '' +
+    shellcmd('' +
         'curl ' +
         '--connect-timeout 20 ' +
         '--max-time 30 ' +
@@ -41,54 +50,61 @@ app.get('/up', function(req, res) {
         '--fail ' +
         '--silent ' +
         '--output /dev/null ' +
-        '$TEST_URL 2>/dev/null ; echo $(($? == 0))', res );
+        '$TEST_URL 2>/dev/null ; echo $(($? == 0))', res);
 });
 
 // Get the current VPN exit IP
-app.get('/ip', function(req, res) {
+app.get('/ip', function (req, res) {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    shellcmd( 'curl http://ipinfo.io/ip', res );
+    shellcmd('curl http://ipinfo.io/ip', res);
 });
 
 // Get the current VPN exit IP
-app.get('/ipinfo', function(req, res) {
+app.get('/ipinfo', function (req, res) {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    shellcmd( 'curl http://ipinfo.io/', res );
+    shellcmd('curl http://ipinfo.io/', res);
 });
 
 // Get the current VPN region (province or state)
-app.get('/region', function(req, res) {
+app.get('/region', function (req, res) {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    shellcmd( 'curl http://ipinfo.io/region', res );
+    shellcmd('curl http://ipinfo.io/region', res);
 });
 
-app.get('/randomvpn', function(req, res) {
+// Restart the VPN client to pick up a new endpoint
+app.get('/randomvpn', function (req, res) {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    shellcmd( '/app/randomvpn.sh', res );
+    shellcmd('/app/randomvpn.sh', res);
+});
+
+// Kill the container completely
+app.get('/kill', function (req, res) {
+    res.writeHead(200, {"Content-Type": "text/plain"});
+    shellcmd('s6-svscanctl -t /var/run/s6/services', res);
 });
 
 // Handle 404
-app.use(function(req, res) {
+app.use(function (req, res) {
     res.status(404).send('404: Route not Found');
 });
 
 // Handle 500
-app.use(function(error, req, res, next) {
+app.use(function (error, req, res, next) {
     res.status(500).send('500: Internal Server Error');
 });
 
-const server = app.listen(80);
+const server = app.listen(8080);
 
 process.on('exit', function () {
     console.log('Got exit event. Trying to stop Express server.');
-    app.close(function() {
+    app.close(function () {
         console.log("Express server closed");
     });
 });
 
-process.on('SIGINT', function() {
+process.on('SIGINT', function () {
     console.log('Got SIGINT. Trying to exit gracefully.');
-    server.close(function() {
+    server.close(function () {
         console.log("Express server closed. Asking process to exit.");
         process.exit()
     });

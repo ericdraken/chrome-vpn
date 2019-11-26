@@ -49,7 +49,7 @@ app.all('*', (req, res) => {
   console.log(echo);
 });
 
-http.createServer(app).listen(80);
+http.createServer(app).listen(8080);
 console.log('-- Echo Server Listening --');
 
 let calledClose = false;

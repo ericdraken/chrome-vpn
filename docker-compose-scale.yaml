@@ -45,8 +45,9 @@ services:
     networks:
       - proxynet
     expose:
-      - 3000
-      - 3001
+      - 3000 # Chrome Debug Protocol port
+      - 3001 # Chrome bypass port
+      - 8080 # Actuator port
     dns:
       - "${DNS_SERVER_1:-9.9.9.9}"
       - "${DNS_SERVER_2:-1.1.1.1}"
@@ -72,4 +73,4 @@ services:
     networks:
       - proxynet
     expose:
-      - 80
+      - 8080
