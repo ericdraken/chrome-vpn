@@ -29,7 +29,7 @@ chmod 0600 $auth_file
 
 # Use api.nordvpn.com
 servers=`curl -s $URL_NORDVPN_API`
-servers=`echo $servers | jq -c '.[] | select(.features.openvpn_udp == true)' &&\
+servers=`echo $servers | jq -c '.[] | select(.features.openvpn_udp == true)' && \
          echo $servers | jq -c '.[] | select(.features.openvpn_tcp == true)'`
 servers=`echo $servers | jq -s -a -c 'unique'`
 pool_length=`echo $servers | jq 'length'`
@@ -88,8 +88,8 @@ if [[ !($pool_length -eq 0) ]]; then
 fi
 
 if [[ !($RANDOM_TOP -eq 0) ]]; then
-    echo "Random order of top $RANDOM_TOP servers in filtered pool"
-    if [[ $RANDOM_TOP -lt pool_length ]]; then
+    echo "Random order of top 20 servers in filtered pool"
+    if [[ $RANDOM_TOP -lt $pool_length ]]; then
         filtered=`echo $servers | head -n $RANDOM_TOP | shuf`
         servers="$filtered"`echo $servers | tail -n +$((RANDOM_TOP + 1))`
     else
@@ -154,9 +154,11 @@ if [ -z $config ]; then
     config="${ovpn_dir}/`ls ${ovpn_dir} | shuf -n 1`"
 fi
 
-cp "$config" "$config_file"
-#echo "script-security 2" >> "$config_file"
-#echo "up /etc/openvpn/up.sh" >> "$config_file"
-#echo "down /etc/openvpn/down.sh" >> "$config_file"
+# Force an overwrite
+\cp -rf "$config" "$config_file"
+echo "script-security 2" >> "$config_file"
+echo "up /app/openvpn-up.sh" >> "$config_file"
+
+printf "\n>>> Using: $config <<<\n\n";
 
 exit 0
