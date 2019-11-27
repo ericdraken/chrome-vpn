@@ -19,6 +19,8 @@ services:
       FRONTEND_PORT: 3000
       BACKENDS_PORT: 3000
       BACKENDS: "chrome-vpn"
+      HTTPCHK: "HEAD /health"
+      HTTPCHKPORT: 8080
 
   proxy-haproxy:
     build:
@@ -34,6 +36,8 @@ services:
       FRONTEND_PORT: 3001
       BACKENDS_PORT: 3001
       BACKENDS: "chrome-vpn"
+      HTTPCHK: "HEAD /health"
+      HTTPCHKPORT: 8080
 
   chrome-vpn:
     # image: ericdraken/chrome-vpn: latest
