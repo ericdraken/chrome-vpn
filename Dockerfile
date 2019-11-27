@@ -18,10 +18,10 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
     URL_OVPN_FILES="https://downloads.nordcdn.com/configs/archives/servers/ovpn.zip" \
     PROTOCOL=openvpn_udp \
     MAX_LOAD=70 \
-    RANDOM_TOP=0 \
+    RANDOM_TOP=20 \
     OPENVPN_OPTS="" \
-    MIN_RANDOM_SLEEP=2 \
-    MAX_RANDOM_SLEEP=5 \
+    MIN_RANDOM_SLEEP=1 \
+    MAX_RANDOM_SLEEP=8 \
     TEST_URL="https://1.1.1.1/"
 
 # Install Ubuntu packages
