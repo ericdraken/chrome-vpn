@@ -20,13 +20,15 @@ function shellcmd(cmd, res) {
     });
 }
 
-app.use(basicAuth({
-    users: {admin: !!process.env.ACTUATOR_PASS ? process.env.ACTUATOR_PASS : 'admin'},
-    challenge: true,
-    unauthorizedResponse: (req) => {
-        return 'Unauthorized';
-    }
-}));
+function auth() {
+    return basicAuth({
+        users: {admin: !!process.env.ACTUATOR_PASS ? process.env.ACTUATOR_PASS : 'admin'},
+        challenge: true,
+        unauthorizedResponse: (req) => {
+            return 'Unauthorized';
+        }
+    });
+}
 
 app.get('/', function (req, res) {
     res.writeHead(200, {"Content-Type": "text/plain"});
@@ -37,6 +39,13 @@ app.get('/', function (req, res) {
 app.get('/status', function (req, res) {
     res.writeHead(200, {"Content-Type": "text/plain"});
     shellcmd('service openvpn status ; echo $(($? == 0))', res);
+});
+
+// Get the VPN service status and return 200 or 500
+app.head('/health', function (req, res) {
+    child.exec('service openvpn status >/dev/null', function (err, stdout, stderr) {
+        res.status( !!err ? 500 : 200 ).end();
+    })
 });
 
 // Get the VPN connectivity status, up = 1, down = 0
@@ -72,15 +81,18 @@ app.get('/region', function (req, res) {
 });
 
 // Restart the VPN client to pick up a new endpoint
-app.get('/randomvpn', function (req, res) {
+app.get('/randomvpn', auth, function (req, res) {
     res.writeHead(200, {"Content-Type": "text/plain"});
     shellcmd('/app/randomvpn.sh', res);
 });
 
 // Kill the container completely
-app.get('/kill', function (req, res) {
+app.get('/kill', auth, function (req, res) {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    shellcmd('s6-svscanctl -t /var/run/s6/services', res);
+    res.end('ok');
+    child.exec('s6-svscanctl -t /var/run/s6/services', function (err, stdout, stderr) {
+        console.log( !!err ? stderr : stdout);
+    });
 });
 
 // Handle 404

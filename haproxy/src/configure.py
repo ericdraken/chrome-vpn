@@ -26,7 +26,8 @@ TIMEOUT_CONNECT = os.environ.get('TIMEOUT_CONNECT', '5000')
 TIMEOUT_CLIENT = os.environ.get('TIMEOUT_CLIENT', '50000')
 TIMEOUT_SERVER = os.environ.get('TIMEOUT_SERVER', '50000')
 HTTPCHK = os.environ.get('HTTPCHK', 'HEAD /')
-INTER = os.environ.get('INTER', '2s')
+HTTPCHKPORT = os.environ.get('HTTPCHKPORT', '80')
+INTER = os.environ.get('INTER', '10s')
 FAST_INTER = os.environ.get('FAST_INTER', INTER)
 DOWN_INTER = os.environ.get('DOWN_INTER', INTER)
 RISE = os.environ.get('RISE', '2')
@@ -59,17 +60,14 @@ backend_conf = Template("""
   backend $backend
     mode $mode
     balance $balance
-    # option forwardfor
-    # http-request set-header X-Forwarded-Port %[dst_port]
-    # http-request add-header X-Forwarded-Proto https if { ssl_fc }
-    # option httpchk $httpchk HTTP/1.1\\r\\nHost:localhost
+    option httpchk $httpchk
     default-server inter $inter fastinter $fastinter downinter $downinter fall $fall rise $rise
     cookie VPN_ID insert indirect nocache
 """)
 cookies = "cookie \\\"@@value@@\\\""
 
 backend_conf_plus = Template("""
-    server $name-$index $host:$port $cookies check
+    server $name-$index $host:$port $cookies check port $httpchkport
 """)
 
 health_conf = """
@@ -118,7 +116,9 @@ if sys.argv[1] == "dns":
             index=ip.replace(".", "-"),
             host=ip,
             port=port,
-            cookies=cookies.replace('@@value@@', ip))
+            cookies=cookies.replace('@@value@@', ip),
+            httpchkport=HTTPCHKPORT
+        )
 
 ################################################################################
 # Backends provided via BACKENDS environment variable
@@ -134,7 +134,9 @@ elif sys.argv[1] == "env":
                 index=index,
                 host=host,
                 port=port,
-                cookies=cookies.replace('@@value@@', host))
+                cookies=cookies.replace('@@value@@', host),
+                httpchkport=HTTPCHKPORT
+        )
 
 ################################################################################
 # Look for backend within /etc/hosts
@@ -184,7 +186,8 @@ elif sys.argv[1] == "hosts":
                 index=index,
                 host=host_ip,
                 port=host_port,
-                cookies=cookies.replace('@@value@@', host_ip)
+                cookies=cookies.replace('@@value@@', host_ip),
+                httpchkport=HTTPCHKPORT
         )
         index += 1
 
