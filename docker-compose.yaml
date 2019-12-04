@@ -2,9 +2,7 @@ version: '3'
 
 services:
   chrome-vpn:
-    # image: ericdraken/chrome-vpn: latest
-    build:
-      context: .
+    image: ericdraken/chrome-vpn:armv7
     restart: unless-stopped
     cap_add:
       - NET_ADMIN # Needed for VPN tunnel adapter
