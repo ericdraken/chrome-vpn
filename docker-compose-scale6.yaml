@@ -14,11 +14,16 @@ services:
       - "${CHROME_RDP_PORT:-3000}:3000"
     restart: unless-stopped
     depends_on:
-      - chrome-vpn
+      - chrome-vpn1
+      - chrome-vpn2
+      - chrome-vpn3
+      - chrome-vpn4
+      - chrome-vpn5
+      - chrome-vpn6
     environment:
       FRONTEND_PORT: 3000
       BACKENDS_PORT: 3000
-      BACKENDS: "chrome-vpn"
+      BACKENDS: "chrome-vpn1 chrome-vpn2 chrome-vpn3 chrome-vpn4"
       HTTPCHK: "HEAD /health"
       HTTPCHKPORT: 8080
 
@@ -31,16 +36,24 @@ services:
       - "${PROXY_PORT:-3001}:3001"
     restart: unless-stopped
     depends_on:
-      - chrome-vpn
+      - chrome-vpn1
+      - chrome-vpn2
+      - chrome-vpn3
+      - chrome-vpn4
+      - chrome-vpn5
+      - chrome-vpn6
     environment:
       FRONTEND_PORT: 3001
       BACKENDS_PORT: 3001
-      BACKENDS: "chrome-vpn"
+      BACKENDS: "chrome-vpn1 chrome-vpn2 chrome-vpn3 chrome-vpn4"
       HTTPCHK: "HEAD /health"
       HTTPCHKPORT: 8080
 
-  chrome-vpn:
-    image: ericdraken/chrome-vpn:armv7
+  chrome-vpn1: &chrome-vpn
+    # image: ericdraken/chrome-vpn: latest
+    build:
+      context: .
+
     restart: unless-stopped
     cap_add:
       - NET_ADMIN # Needed for VPN tunnel adapter
@@ -67,8 +80,23 @@ services:
       NETWORK: "${NETWORK:-192.168.0.0/24}"
       TZ: "${TZ:-America/Vancouver}"
       TEST_URL: "${TEST_URL:-https://1.1.1.1/}"
-      MAX_CPU_PERCENT: 25
-      MAX_MEMORY_PERCENT: 25
+      MAX_CPU_PERCENT: 20
+      MAX_MEMORY_PERCENT: 20
+
+  chrome-vpn2:
+    <<: *chrome-vpn
+
+  chrome-vpn3:
+    <<: *chrome-vpn
+
+  chrome-vpn4:
+    <<: *chrome-vpn
+
+  chrome-vpn5:
+    <<: *chrome-vpn
+
+  chrome-vpn6:
+    <<: *chrome-vpn
 
   echo:
     build:
