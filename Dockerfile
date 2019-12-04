@@ -1,4 +1,4 @@
-FROM browserless/chrome:latest
+FROM ericdraken/browserless-chrome:armv7
 LABEL maintainer="ericdraken@gmail.com"
 LABEL repo="https://github.com/ericdraken/chrome-vpn"
 
@@ -34,7 +34,7 @@ RUN mkdir -p /vpn && \
     mkdir -p /ovpn
 
 # Get the s6 process supervisor
-ARG S6_FILE=s6-overlay-amd64.tar.gz
+ARG S6_FILE=s6-overlay-armhf.tar.gz
 ARG S6_VERSION=v1.22.1.0
 ADD https://github.com/just-containers/s6-overlay/releases/download/$S6_VERSION/$S6_FILE /tmp/
 
