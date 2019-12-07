@@ -36,6 +36,12 @@ app.get('/', function (req, res) {
 });
 
 // Get the VPN service status, up = 1, down = 0
+app.get('/zygotes', function (req, res) {
+    res.writeHead(200, {"Content-Type": "text/plain"});
+    shellcmd('ps -axef | grep "[c]hrom.*pinch" | wc -l' , res);
+});
+
+// Get the VPN service status, up = 1, down = 0
 app.get('/status', function (req, res) {
     res.writeHead(200, {"Content-Type": "text/plain"});
     shellcmd('service openvpn status ; echo $(($? == 0))', res);
