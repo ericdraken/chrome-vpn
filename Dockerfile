@@ -52,6 +52,9 @@ RUN chmod +x /app/*
 # Install the Node actuator
 RUN npm --prefix /app/actuator install
 
+# Install speedtest-cli
+RUN pip3 install speedtest-cli
+
 # Reuse a volume to prevent downloading VPN configs over and over again
 VOLUME ["/ovpn"]
 

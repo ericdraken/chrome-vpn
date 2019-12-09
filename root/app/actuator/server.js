@@ -32,7 +32,19 @@ function auth() {
 
 app.get('/', function (req, res) {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    res.end("Use one of these endpoints: /status, /up, /ip, /ipinfo, /region, /randomvpn, or /kill");
+    res.end("Use one of these endpoints: /speedtest, /zygotes, /status, /up, /ip, /ipinfo, /region, /randomvpn, or /kill");
+});
+
+// Get the raw speedtest output
+app.get('/speedtest-raw', function (req, res) {
+    res.writeHead(200, {"Content-Type": "text/plain"});
+    shellcmd('speedtest-cli --no-upload --bytes --single' , res);
+});
+
+// Get the raw speedtest output
+app.get('/speedtest', function (req, res) {
+    res.writeHead(200, {"Content-Type": "text/json"});
+    shellcmd('speedtest-cli --no-upload --json || echo \'{}\'' , res);
 });
 
 // Get the VPN service status, up = 1, down = 0
