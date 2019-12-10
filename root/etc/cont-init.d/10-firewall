@@ -19,11 +19,11 @@ iptables  -A OUTPUT -p udp --dport 53 -j ACCEPT
 ip6tables -A OUTPUT -p udp --dport 53 -j ACCEPT 2> /dev/null
 iptables  -A OUTPUT -p tcp -m owner --gid-owner vpn -j ACCEPT 2>/dev/null &&
 iptables  -A OUTPUT -p udp -m owner --gid-owner vpn -j ACCEPT || {
-    iptables  -A OUTPUT -p tcp -m tcp --dport 1194 -j ACCEPT
+    iptables  -A OUTPUT -p tcp -m tcp --dport 443 -j ACCEPT
     iptables  -A OUTPUT -p udp -m udp --dport 1194 -j ACCEPT; }
 ip6tables -A OUTPUT -p tcp -m owner --gid-owner vpn -j ACCEPT 2>/dev/null &&
 ip6tables -A OUTPUT -p udp -m owner --gid-owner vpn -j ACCEPT 2>/dev/null || {
-    ip6tables -A OUTPUT -p tcp -m tcp --dport 1194 -j ACCEPT 2>/dev/null
+    ip6tables -A OUTPUT -p tcp -m tcp --dport 443 -j ACCEPT 2>/dev/null
     ip6tables -A OUTPUT -p udp -m udp --dport 1194 -j ACCEPT 2>/dev/null; }
 
 echo "Bypass requests to NordVPN through regular connection"
