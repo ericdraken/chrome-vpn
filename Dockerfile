@@ -16,7 +16,7 @@ WORKDIR "/"
 ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
     URL_RECOMMENDED_SERVERS="https://nordvpn.com/wp-admin/admin-ajax.php?action=servers_recommendations" \
     URL_OVPN_FILES="https://downloads.nordcdn.com/configs/archives/servers/ovpn.zip" \
-    PROTOCOL=openvpn_udp \
+    PROTOCOL=openvpn_tcp \
     MAX_LOAD=70 \
     RANDOM_TOP=20 \
     OPENVPN_OPTS="" \
