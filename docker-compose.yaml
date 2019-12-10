@@ -1,7 +1,8 @@
-version: '3'
+version: '3.5'
 
 services:
   chrome-vpn:
+    # shm_size: '512mb'
     image: ericdraken/chrome-vpn:armv7
     restart: unless-stopped
     cap_add:
@@ -9,10 +10,19 @@ services:
     ports:
       - "${CHROME_RDP_PORT:-3000}:3000"
       - "${PROXY_PORT:-3001}:3001"
+    expose:
+      - 8080 # Actuator port
     dns:
       - "${DNS_SERVER_1:-9.9.9.9}"
       - "${DNS_SERVER_2:-1.1.1.1}"
+    volumes:
+      - ./chromium-defaults.sh:/app/chrome/chromium-defaults.sh:ro
+      # - /dev/shm:/dev/shm
+    tmpfs:
+      - /tmp
     environment:
+      FORCE_OVPN: "ca569.nordvpn.com.tcp.ovpn"
+      PROTOCOL: "openvpn_tcp"
       VPN_USER: "$VPN_USER"
       VPN_PASS: "$VPN_PASS"
         # curl -s https://api.nordvpn.com/server | jq -c '.[] | .country' | jq -s -a -c 'unique | .[]'
@@ -26,3 +36,16 @@ services:
       NETWORK: "${NETWORK:-192.168.0.0/24}"
       TZ: "${TZ:-America/Vancouver}"
       TEST_URL: "${TEST_URL:-https://1.1.1.1/}"
+      # CHROME
+      MAX_CPU_PERCENT: 200
+      MAX_MEMORY_PERCENT: 120
+      KEEP_ALIVE: "false"
+      CHROME_REFRESH_TIME: 0
+      CONNECTION_TIMEOUT: 360000
+      MAX_CONCURRENT_SESSIONS: 8
+      QUEUE_LENGTH: 20
+      PREBOOT_CHROME: "false"
+      WORKSPACE_DELETE_EXPIRED: "true"
+      WORKSPACE_EXPIRE_DAYS: 1
+      EXIT_ON_HEALTH_FAILURE: "true"
+      DEBUG: "browserless*"
