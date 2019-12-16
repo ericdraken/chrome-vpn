@@ -1,0 +1,13 @@
+#!/usr/bin/with-contenv bash
+
+mkdir -p ${SQUID_LOG_DIR}
+chmod -R 755 ${SQUID_LOG_DIR}
+chown -R ${SQUID_USER}:${SQUID_USER} ${SQUID_LOG_DIR}
+
+mkdir -p ${SQUID_CACHE_DIR}
+chown -R ${SQUID_USER}:${SQUID_USER} ${SQUID_CACHE_DIR}
+
+# Create cache folders
+exec squid -f /etc/services.d/squid/squid.conf -N -C -z -d 1
+
+exit 0

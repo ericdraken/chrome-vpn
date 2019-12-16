@@ -24,9 +24,15 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
     MAX_RANDOM_SLEEP=8 \
     TEST_URL="https://1.1.1.1/"
 
+# The must match the folders in the squid.conf file
+ENV SQUID_VERSION=3.5.27 \
+    SQUID_CACHE_DIR=/tmp/squid \
+    SQUID_LOG_DIR=/tmp/log/squid/ \
+    SQUID_USER=proxy
+
 # Install Ubuntu packages
 RUN apt-get -qq update && \
-    apt-get -y -qq install bash curl unzip tar iptables jq openvpn cron privoxy && \
+    apt-get -y -qq install bash curl unzip tar iptables jq openvpn cron privoxy squid=${SQUID_VERSION}* && \
     apt-get -qq clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Make folders to hold VPN config information
@@ -59,8 +65,8 @@ RUN pip3 install speedtest-cli
 VOLUME ["/ovpn"]
 
 # Expose the web-socket, HTTP ports, and proxy ports
-EXPOSE 3000
-EXPOSE 3001
+EXPOSE 3000/tcp
+EXPOSE 3001/tcp
 
 # Health check by trying to connect to GitHub with timeouts.
 # All network activity must go through the VPN, so if TUN
