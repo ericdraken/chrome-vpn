@@ -16,7 +16,7 @@ WORKDIR "/"
 ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
     URL_RECOMMENDED_SERVERS="https://nordvpn.com/wp-admin/admin-ajax.php?action=servers_recommendations" \
     URL_OVPN_FILES="https://downloads.nordcdn.com/configs/archives/servers/ovpn.zip" \
-    PROTOCOL=openvpn_tcp \
+    PROTOCOL=openvpn_udp \
     MAX_LOAD=70 \
     RANDOM_TOP=20 \
     OPENVPN_OPTS="" \
@@ -24,16 +24,9 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
     MAX_RANDOM_SLEEP=8 \
     TEST_URL="https://1.1.1.1/"
 
-# The must match the folders in the squid.conf file
-ENV SQUID_VERSION=3.5.27 \
-    SQUID_CACHE_DIR=/tmp/squid \
-    SQUID_LOG_DIR=/tmp/log/squid/ \
-    SQUID_USER=proxy
-
 # Install Ubuntu packages
 RUN apt-get -qq update && \
-    apt-get -y -qq install bash curl unzip tar iptables jq openvpn cron privoxy squid=${SQUID_VERSION}* && \
-    apt-get -qq clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    apt-get -y -qq install bash curl unzip tar iptables jq openvpn cron privoxy openssl
 
 # Make folders to hold VPN config information
 RUN mkdir -p /vpn && \
@@ -60,6 +53,37 @@ RUN npm --prefix /app/actuator install
 
 # Install speedtest-cli
 RUN pip3 install speedtest-cli
+
+# TODO: Try squid 4
+# Install squid
+# The must match the folders in the squid.conf file
+# Note: squid3: libssl1.0-dev, squid4: libssl-dev
+ENV SQUID_FILE=squid-3.5.28.tar.gz \
+    SQUID_FOLDER=v3/3.5 \
+    SQUID_CACHE_DIR=/tmp/squid \
+    SQUID_LOG_DIR=/tmp/log/squid \
+    SQUID_USER=proxy \
+    SQUID_BUILD_DEPS="libssl1.0-dev build-essential libcrypto++-dev pkg-config autoconf g++"
+
+RUN apt-get -y -qq install $SQUID_BUILD_DEPS
+
+ADD http://www.squid-cache.org/Versions/$SQUID_FOLDER/$SQUID_FILE /tmp/
+# TODO: Verify the signature
+# ADD http://www.squid-cache.org/Versions/$SQUID_FOLDER/$SQUID_FILE.asc /tmp/
+# RUN gpg --import /tmp/$SQUID_FILE.asc 2>&1
+RUN tar xfz /tmp/$SQUID_FILE -C /tmp/
+RUN cd /tmp/squid* && \
+    ./configure \
+        --with-default-user=$SQUID_USER \
+        --with-openssl \
+        --enable-ssl \
+        --enable-ssl-crtd \
+        --prefix=/usr/local/squid && \
+    make all && make install
+
+# Cleanup
+RUN apt-get -y -qq remove $SQUID_BUILD_DEPS && \
+    apt-get -qq clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Reuse a volume to prevent downloading VPN configs over and over again
 VOLUME ["/ovpn"]
