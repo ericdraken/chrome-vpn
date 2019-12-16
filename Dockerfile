@@ -54,16 +54,15 @@ RUN npm --prefix /app/actuator install
 # Install speedtest-cli
 RUN pip3 install speedtest-cli
 
-# TODO: Try squid 4
 # Install squid
 # The must match the folders in the squid.conf file
 # Note: squid3: libssl1.0-dev, squid4: libssl-dev
-ENV SQUID_FILE=squid-3.5.28.tar.gz \
-    SQUID_FOLDER=v3/3.5 \
+ENV SQUID_FILE=squid-4.8.tar.gz \
+    SQUID_FOLDER=v4 \
     SQUID_CACHE_DIR=/tmp/squid \
     SQUID_LOG_DIR=/tmp/log/squid \
     SQUID_USER=proxy \
-    SQUID_BUILD_DEPS="libssl1.0-dev build-essential libcrypto++-dev pkg-config autoconf g++"
+    SQUID_BUILD_DEPS="libssl-dev build-essential libcrypto++-dev pkg-config autoconf g++"
 
 RUN apt-get -y -qq install $SQUID_BUILD_DEPS
 
@@ -71,6 +70,7 @@ ADD http://www.squid-cache.org/Versions/$SQUID_FOLDER/$SQUID_FILE /tmp/
 # TODO: Verify the signature
 # ADD http://www.squid-cache.org/Versions/$SQUID_FOLDER/$SQUID_FILE.asc /tmp/
 # RUN gpg --import /tmp/$SQUID_FILE.asc 2>&1
+# RUN gpg --verify /tmp/$SQUID_FILE.sig /tmp/$SQUID_FILE 2>&1
 RUN tar xfz /tmp/$SQUID_FILE -C /tmp/
 RUN cd /tmp/squid* && \
     ./configure \
