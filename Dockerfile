@@ -44,16 +44,6 @@ RUN gpg --import /tmp/key.asc 2>&1
 RUN gpg --verify /tmp/$S6_FILE.sig /tmp/$S6_FILE 2>&1
 RUN tar xfz /tmp/$S6_FILE -C /
 
-COPY root/ /
-
-RUN chmod +x /app/*
-
-# Install the Node actuator
-RUN npm --prefix /app/actuator install
-
-# Install speedtest-cli
-RUN pip3 install speedtest-cli
-
 # Install squid
 # The must match the folders in the squid.conf file
 # Note: squid3: libssl1.0-dev, squid4: libssl-dev
@@ -72,18 +62,30 @@ ADD http://www.squid-cache.org/Versions/$SQUID_FOLDER/$SQUID_FILE /tmp/
 # RUN gpg --import /tmp/$SQUID_FILE.asc 2>&1
 # RUN gpg --verify /tmp/$SQUID_FILE.sig /tmp/$SQUID_FILE 2>&1
 RUN tar xfz /tmp/$SQUID_FILE -C /tmp/
+# This will take a very long time to build!
 RUN cd /tmp/squid* && \
     ./configure \
         --with-default-user=$SQUID_USER \
         --with-openssl \
         --enable-ssl \
         --enable-ssl-crtd \
-        --prefix=/usr/local/squid && \
+        --prefix=/squid && \
     make all && make install
 
 # Cleanup
 RUN apt-get -y -qq remove $SQUID_BUILD_DEPS && \
     apt-get -qq clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+COPY root/app /app
+COPY root/etc /etc
+
+RUN chmod +x /app/*
+
+# Install the Node actuator
+RUN npm --prefix /app/actuator install
+
+# Install speedtest-cli
+RUN pip3 install speedtest-cli
 
 # Reuse a volume to prevent downloading VPN configs over and over again
 VOLUME ["/ovpn"]
