@@ -2,8 +2,8 @@ version: '3.5'
 
 services:
   chrome-vpn:
-    # shm_size: '512mb'
     image: ericdraken/chrome-vpn:armv7
+    # image: solardesigner/voyager-chrome:armv7
     restart: unless-stopped
     cap_add:
       - NET_ADMIN # Needed for VPN tunnel adapter
@@ -16,13 +16,15 @@ services:
       - "${DNS_SERVER_1:-9.9.9.9}"
       - "${DNS_SERVER_2:-1.1.1.1}"
     volumes:
-      - ./chromium-defaults.sh:/app/chrome/chromium-defaults.sh:ro
-      # - /dev/shm:/dev/shm
+      - ./.squid.conf:/conf/squid.conf:ro
+      - ./.yahoo.txt:/squid/acl/yahoo.txt:ro
+      - ./.chromium.sh:/conf/chromuim.sh:ro
+      - /dev/shm:/dev/shm # Use shared memory with the host
     tmpfs:
       - /tmp
     environment:
-      FORCE_OVPN: "ca569.nordvpn.com.tcp.ovpn"
-      PROTOCOL: "openvpn_tcp"
+      FORCE_OVPN: "ca569.nordvpn.com.udp.ovpn"
+      PROTOCOL: "openvpn_udp"
       VPN_USER: "$VPN_USER"
       VPN_PASS: "$VPN_PASS"
         # curl -s https://api.nordvpn.com/server | jq -c '.[] | .country' | jq -s -a -c 'unique | .[]'
@@ -39,13 +41,16 @@ services:
       # CHROME
       MAX_CPU_PERCENT: 200
       MAX_MEMORY_PERCENT: 120
-      KEEP_ALIVE: "false"
-      CHROME_REFRESH_TIME: 0
-      CONNECTION_TIMEOUT: 360000
-      MAX_CONCURRENT_SESSIONS: 8
-      QUEUE_LENGTH: 20
+      CHROME_REFRESH_TIME: 60000 # 10 minutes
+      CONNECTION_TIMEOUT: 600000
+      MAX_CONCURRENT_SESSIONS: 6
+      QUEUE_LENGTH: 0
       PREBOOT_CHROME: "false"
+      KEEP_ALIVE: "false"
       WORKSPACE_DELETE_EXPIRED: "true"
       WORKSPACE_EXPIRE_DAYS: 1
       EXIT_ON_HEALTH_FAILURE: "true"
       DEBUG: "browserless*"
+      # Trick to not rimraf the data dir and not save data
+      DEFAULT_LAUNCH_ARGS: "[ \"--user-data-dir=/dev/null\", \"--proxy-server=localhost:3128\" ]"
+      DEFAULT_USER_DATA_DIR: "/dev/null"

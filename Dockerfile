@@ -26,7 +26,8 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
 
 # Install Ubuntu packages
 RUN apt-get -qq update && \
-    apt-get -y -qq install bash curl unzip tar iptables jq openvpn cron privoxy openssl
+    apt-get -y -qq install bash curl unzip tar iptables jq openvpn cron privoxy openssl && \
+    apt-get -qq clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Make folders to hold VPN config information
 RUN mkdir -p /vpn && \
@@ -44,38 +45,19 @@ RUN gpg --import /tmp/key.asc 2>&1
 RUN gpg --verify /tmp/$S6_FILE.sig /tmp/$S6_FILE 2>&1
 RUN tar xfz /tmp/$S6_FILE -C /
 
-# Install squid
+# Copy the squid-with-openssl from another container to
+# save an hour of building
+COPY --from=ericdraken/squid-openssl:armv7 /squid /squid
+
 # The must match the folders in the squid.conf file
-# Note: squid3: libssl1.0-dev, squid4: libssl-dev
-ENV SQUID_FILE=squid-4.8.tar.gz \
-    SQUID_FOLDER=v4 \
-    SQUID_CACHE_DIR=/tmp/squid \
+ENV SQUID_CACHE_DIR=/tmp/squid \
     SQUID_LOG_DIR=/tmp/log/squid \
-    SQUID_USER=proxy \
-    SQUID_BUILD_DEPS="libssl-dev build-essential libcrypto++-dev pkg-config autoconf g++"
+    SQUID_USER=proxy
 
-RUN apt-get -y -qq install $SQUID_BUILD_DEPS
+# Change ownership to the proxy user
+RUN chown ${SQUID_USER}:${SQUID_USER} -R /squid
 
-ADD http://www.squid-cache.org/Versions/$SQUID_FOLDER/$SQUID_FILE /tmp/
-# TODO: Verify the signature
-# ADD http://www.squid-cache.org/Versions/$SQUID_FOLDER/$SQUID_FILE.asc /tmp/
-# RUN gpg --import /tmp/$SQUID_FILE.asc 2>&1
-# RUN gpg --verify /tmp/$SQUID_FILE.sig /tmp/$SQUID_FILE 2>&1
-RUN tar xfz /tmp/$SQUID_FILE -C /tmp/
-# This will take a very long time to build!
-RUN cd /tmp/squid* && \
-    ./configure \
-        --with-default-user=$SQUID_USER \
-        --with-openssl \
-        --enable-ssl \
-        --enable-ssl-crtd \
-        --prefix=/squid && \
-    make all && make install
-
-# Cleanup
-RUN apt-get -y -qq remove $SQUID_BUILD_DEPS && \
-    apt-get -qq clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
+COPY root/conf /conf
 COPY root/app /app
 COPY root/etc /etc
 
