@@ -45,19 +45,6 @@ RUN gpg --import /tmp/key.asc 2>&1
 RUN gpg --verify /tmp/$S6_FILE.sig /tmp/$S6_FILE 2>&1
 RUN tar xfz /tmp/$S6_FILE -C /
 
-# Copy the squid-with-openssl from another container to
-# save an hour of building
-COPY --from=ericdraken/squid-openssl:armv7 /squid /squid
-
-# The must match the folders in the squid.conf file
-ENV SQUID_CACHE_DIR=/tmp/squid \
-    SQUID_LOG_DIR=/tmp/log/squid \
-    SQUID_USER=proxy
-
-# Change ownership to the proxy user
-RUN chown ${SQUID_USER}:${SQUID_USER} -R /squid
-
-COPY root/conf /conf
 COPY root/app /app
 COPY root/etc /etc
 

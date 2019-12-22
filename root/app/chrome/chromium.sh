@@ -7,7 +7,7 @@
 # REF: https://chromium.googlesource.com/chromium/blink/+/master/Source/core/frame/Settings.in
 CHROMIUM_FLAGS=$(
   cat <<'EOF'
- --ignore-certificate-errors
- --proxy-server=localhost:3128
+ --no-sandbox
+ --disable-setuid-sandbox
 EOF
 )

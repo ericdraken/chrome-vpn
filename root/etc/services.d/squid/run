@@ -1,7 +1,0 @@
-#!/usr/bin/with-contenv bash
-
-echo "Starting squid..."
-exec /squid/sbin/squid -N -Y -C -d 9
-
-# -z - makes the cache folders for first time
-# -N - no daemon
