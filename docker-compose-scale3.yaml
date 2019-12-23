@@ -17,11 +17,10 @@ services:
       - chrome-vpn1
       - chrome-vpn2
       - chrome-vpn3
-      - chrome-vpn4
     environment:
       FRONTEND_PORT: 3000
       BACKENDS_PORT: 3000
-      BACKENDS: "chrome-vpn1 chrome-vpn2 chrome-vpn3 chrome-vpn4"
+      BACKENDS: "chrome-vpn1 chrome-vpn2 chrome-vpn3"
       HTTPCHK: "HEAD /health"
       HTTPCHKPORT: 8080
 
@@ -37,11 +36,10 @@ services:
       - chrome-vpn1
       - chrome-vpn2
       - chrome-vpn3
-      - chrome-vpn4
     environment:
       FRONTEND_PORT: 3001
       BACKENDS_PORT: 3001
-      BACKENDS: "chrome-vpn1 chrome-vpn2 chrome-vpn3 chrome-vpn4"
+      BACKENDS: "chrome-vpn1 chrome-vpn2 chrome-vpn3"
       HTTPCHK: "HEAD /health"
       HTTPCHKPORT: 8080
 
@@ -59,31 +57,21 @@ services:
     dns:
       - "${DNS_SERVER_1:-9.9.9.9}"
       - "${DNS_SERVER_2:-1.1.1.1}"
+    volumes:
+      - ./.chromium.sh:/app/chrome/chromium.sh:ro
+      - /dev/shm:/dev/shm # Use shared memory with the host
+    tmpfs:
+      - /tmp
+    env_file:
+      - ./env/chrome-vpn.env
+      - ./env/password.env
     environment:
-      VPN_USER: "$VPN_USER"
-      VPN_PASS: "$VPN_PASS"
-        # curl -s https://api.nordvpn.com/server | jq -c '.[] | .country' | jq -s -a -c 'unique | .[]'
-      COUNTRY: "${COUNTRY:-United States}"
-        # curl -s https://api.nordvpn.com/server | jq -c '.[] | .categories[].name' | jq -s -a -c 'unique | .[]'
-      OPENVPN_OPTS: "${OPENVPN_OPTS:---pull-filter ignore \"ping-restart\" --ping-exit 180}"
-      CATEGORY: "${CATEGORY:-Standard VPN servers}"
-      RANDOM_TOP: "${RANDOM_TOP:-10}"
-      RECREATE_VPN_CRON: "${RECREATE_VPN_CRON:-''}"
-        # ip route | awk '!/ (docker0|br-)/ && /src/ {print $1}'
-      NETWORK: "${NETWORK:-192.168.0.0/24}"
-      TZ: "${TZ:-America/Vancouver}"
-      TEST_URL: "${TEST_URL:-https://1.1.1.1/}"
-      MAX_CPU_PERCENT: 24
-      MAX_MEMORY_PERCENT: 24
-      MAX_CONCURRENT_SESSIONS: 3
+      MAX_CONCURRENT_SESSIONS: 2
 
   chrome-vpn2:
     <<: *chrome-vpn
 
   chrome-vpn3:
-    <<: *chrome-vpn
-
-  chrome-vpn4:
     <<: *chrome-vpn
 
   echo:

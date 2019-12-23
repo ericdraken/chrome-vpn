@@ -3,7 +3,6 @@ version: '3.5'
 services:
   chrome-vpn:
     image: ericdraken/chrome-vpn:armv7
-    # image: solardesigner/voyager-chrome:armv7
     restart: unless-stopped
     cap_add:
       - NET_ADMIN # Needed for VPN tunnel adapter
@@ -16,41 +15,14 @@ services:
       - "${DNS_SERVER_1:-9.9.9.9}"
       - "${DNS_SERVER_2:-1.1.1.1}"
     volumes:
-      - ./.squid.conf:/conf/squid.conf:ro
-      - ./.yahoo.txt:/squid/acl/yahoo.txt:ro
-      - ./.chromium.sh:/conf/chromuim.sh:ro
+      - ./.chromium.sh:/app/chrome/chromium.sh:ro
       - /dev/shm:/dev/shm # Use shared memory with the host
     tmpfs:
       - /tmp
+    env_file:
+      - ./env/chrome-vpn.env
+      - ./env/password.env
     environment:
+      MAX_CONCURRENT_SESSIONS: 5
       FORCE_OVPN: "ca569.nordvpn.com.udp.ovpn"
       PROTOCOL: "openvpn_udp"
-      VPN_USER: "$VPN_USER"
-      VPN_PASS: "$VPN_PASS"
-        # curl -s https://api.nordvpn.com/server | jq -c '.[] | .country' | jq -s -a -c 'unique | .[]'
-      COUNTRY: "${COUNTRY:-United States}"
-        # curl -s https://api.nordvpn.com/server | jq -c '.[] | .categories[].name' | jq -s -a -c 'unique | .[]'
-      OPENVPN_OPTS: "${OPENVPN_OPTS:---pull-filter ignore \"ping-restart\" --ping-exit 180}"
-      CATEGORY: "${CATEGORY:-Standard VPN servers}"
-      RANDOM_TOP: "${RANDOM_TOP:-10}"
-      RECREATE_VPN_CRON: "${RECREATE_VPN_CRON:-''}"
-        # ip route | awk '!/ (docker0|br-)/ && /src/ {print $1}'
-      NETWORK: "${NETWORK:-192.168.0.0/24}"
-      TZ: "${TZ:-America/Vancouver}"
-      TEST_URL: "${TEST_URL:-https://1.1.1.1/}"
-      # CHROME
-      MAX_CPU_PERCENT: 200
-      MAX_MEMORY_PERCENT: 120
-      CHROME_REFRESH_TIME: 60000 # 10 minutes
-      CONNECTION_TIMEOUT: 600000
-      MAX_CONCURRENT_SESSIONS: 6
-      QUEUE_LENGTH: 0
-      PREBOOT_CHROME: "false"
-      KEEP_ALIVE: "false"
-      WORKSPACE_DELETE_EXPIRED: "true"
-      WORKSPACE_EXPIRE_DAYS: 1
-      EXIT_ON_HEALTH_FAILURE: "true"
-      DEBUG: "browserless*"
-      # Trick to not rimraf the data dir and not save data
-      DEFAULT_LAUNCH_ARGS: "[ \"--user-data-dir=/dev/null\", \"--proxy-server=localhost:3128\" ]"
-      DEFAULT_USER_DATA_DIR: "/dev/null"
