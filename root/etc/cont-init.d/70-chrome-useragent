@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv bash
+#!/usr/bin/with-contenv sh
 
 # Remove 'Headless' from the default User Agent string
 if [[ ! $DEFAULT_LAUNCH_ARGS =~ "--user-agent=" ]]; then

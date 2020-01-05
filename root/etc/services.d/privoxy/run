@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv bash
+#!/usr/bin/with-contenv sh
 
 # Return traffic that went through VPN works
 gw=$(ip route | awk '/default/ {print $3}')

@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-
-cp /app/chrome/chromium.sh /etc/chromium-browser/default

@@ -1,4 +1,0 @@
-#!/usr/bin/with-contenv bash
-
-echo "Starting Node actuator service"
-node /app/actuator/server.js

@@ -9,7 +9,9 @@ CHROMIUM_FLAGS=$(
   cat <<'EOF'
  --blink-settings=imagesEnabled=false,loadsImagesAutomatically=false,scrollAnimatorEnabled=false,threadedScrollingEnabled=false,doHtmlPreloadScanning=true,lowPriorityIframes=true,offlineWebApplicationCacheEnabled=true,allowFileAccessFromFileURLs=false
  --force-color-profile=generic-rgb
+ --force-raster-color-profile=generic-rgb
 
+ --no-startup-window
  --single-process
  --no-zygote
 
@@ -17,20 +19,8 @@ CHROMIUM_FLAGS=$(
  --disable-setuid-sandbox
  --no-first-run
 
- --disable-dev-shm-usage
- --disable-breakpad
- --disable-cloud-import
- --disable-databases
- --disable-preconnect
- --disable-speech-api
- --disable-sync
- --disable-translate
-
  --ignore-urlfetcher-cert-requests
-
- --disable-sync-preferences
- --disable-voice-input
- --disable-webgl
+ --use-fake-device-for-media-stream
 
  --user-data-dir=/tmp/chrome
  --media-cache-dir=/tmp/chrome
@@ -39,10 +29,46 @@ CHROMIUM_FLAGS=$(
 
  --no-pings
  --no-wifi
- --disable-local-storage
  --block-new-web-contents
+
  --enable-low-res-tiling
  --enable-low-end-device-mode
+
+ --disable-threaded-animation
+ --disable-test-root-certs
+ --disable-smooth-scrolling
+ --disable-shared-workers
+ --disable-remote-fonts
+ --disable-reading-from-canvas
+ --disable-notifications
+ --disable-logging
+ --disable-highres-timer
+ --disable-gpu
+ --disable-gpu-early-init
+ --disable-font-subpixel-positioning
+ --disable-fine-grained-time-zone-detection
+ --disable-extensions
+ --disable-domain-reliability
+ --disable-device-discovery-notifications
+ --disable-demo-mode
+ --disable-dev-shm-usage
+ --disable-breakpad
+ --disable-cloud-import
+ --disable-databases
+ --disable-preconnect
+ --disable-speech-api
+ --disable-sync
+ --disable-translate
+ --disable-default-apps
+ --disable-sync-preferences
+ --disable-voice-input
+ --disable-webgl
+ --disable-webgl2
+ --disable-client-side-phishing-detection
+ --disable-local-storage
  --disable-features=AccountConsistency,AppBanners,DesktopIOSPromotion,DoodlesOnLocalNtp,ExperimentalAppBanners,GamepadExtensions,GenericSensor,GenericSensorExtraClasses,IPH_DemoMode,ImageCaptureAPI,NewUsbBackend,NoStatePrefetch,OmniboxSpeculativeServiceWorkerStartOnQueryInput,OpenVR,OptimizationHints,ServiceWorkerPaymentApps,SpeculativePreconnect,SpeculativeResourcePrefetching,TopSitesFromSiteEngagement,TranslateRankerEnforcement,UseSuggestionsEvenIfFew,VoiceSearchOnLocalNtp,WebPayments,ZeroSuggestRedirectToChrome,affiliation-based-matching
 EOF
 )
+
+# --trace-startup=*,disabled-by-default-memory-infra
+# --trace-to-console

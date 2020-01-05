@@ -1,0 +1,4 @@
+#!/usr/bin/with-contenv sh
+
+echo "Starting Node actuator service"
+exec node /app/actuator/server.js

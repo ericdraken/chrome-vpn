@@ -46,7 +46,7 @@ RUN rm -f /usr/local/bin/dumb-init && \
 	gpg --verify /tmp/$S6_FILE.sig /tmp/$S6_FILE 2>&1 && \
 	tar xfz /tmp/$S6_FILE -C / && \
 	chmod +x /app/* && \
-	# Install the Node.js actuators
+	# Install the Node.js actuator
 	npm --prefix /app/actuator install && \
 	# Install the speedtest package
 	pip3 install speedtest-cli
