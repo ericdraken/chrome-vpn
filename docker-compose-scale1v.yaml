@@ -14,11 +14,11 @@ services:
       - "${CHROME_RDP_PORT:-3000}:3000"
     restart: unless-stopped
     depends_on:
-      - chrome-vpn1
+      - chrome-vpn1v
     environment:
       FRONTEND_PORT: 3000
       BACKENDS_PORT: 3000
-      BACKENDS: "chrome-vpn1"
+      BACKENDS: "chrome-vpn1v"
       HTTPCHK: "HEAD /health"
       HTTPCHKPORT: 8080
 
@@ -31,16 +31,16 @@ services:
       - "${PROXY_PORT:-3001}:3001"
     restart: unless-stopped
     depends_on:
-      - chrome-vpn1
+      - chrome-vpn1v
     environment:
       FRONTEND_PORT: 3001
       BACKENDS_PORT: 3001
-      BACKENDS: "chrome-vpn1"
+      BACKENDS: "chrome-vpn1v"
       HTTPCHK: "HEAD /health"
       HTTPCHKPORT: 8080
 
-  chrome-vpn1:
-    image: ericdraken/chrome-vpn:armv7
+  chrome-vpn1v:
+    image: solardesigner/voyager-chrome:armv7
     restart: unless-stopped
     cap_add:
       - NET_ADMIN # Needed for VPN tunnel adapter
