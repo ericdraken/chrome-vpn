@@ -13,7 +13,7 @@ sleep $random_sleep
 /app/createvpnconfig.sh || exit 1
 
 # On set up errors, the config file will not be created
-if [[ ! -f "$config_file" ]]; then
+if [ ! -f "$config_file" ]; then
 	echo "VPN config file not present. Exiting."
 	exit 1
 fi
