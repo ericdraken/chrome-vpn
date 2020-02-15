@@ -5,13 +5,13 @@
 # 'ok' or 'failed' if unsuccessful
 # Author: Eric Draken
 
-/app/reconnect.sh >/dev/null || (echo 'failed'; exit 1)
+/app/reconnect.sh >/dev/null || (
+  echo 'failed'
+  exit 1
+)
 sleep 4
 
-i=0
-m=10
-
-until (
+for ((c = 0; c <= 10; c++)); do
   service openvpn status &&
     curl \
       --connect-timeout 2 \
@@ -20,14 +20,11 @@ until (
       --fail \
       --silent \
       --output /dev/null \
-      $TEST_URL 2>/dev/null
-); do
-  if [ ${i} -eq ${m} ]; then
-    echo 'failed'
-    exit 1
-  fi
-  ((i++))
-  sleep 2
+      $TEST_URL 2>/dev/null &&
+      echo 'ok' && exit 0
+
+      sleep 2
 done
-echo 'ok'
-exit 0
+
+echo 'failed'
+exit 1
