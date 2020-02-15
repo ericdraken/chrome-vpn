@@ -25,9 +25,6 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
 ARG S6_FILE=s6-overlay-armhf.tar.gz
 ARG S6_VERSION=v1.22.1.0
 
-COPY root/app /app
-COPY root/etc /etc
-
 # Remove dumb-init from Chrome
 RUN rm -f /usr/local/bin/dumb-init && \
 	# Install dependencies
@@ -45,11 +42,16 @@ RUN rm -f /usr/local/bin/dumb-init && \
     gpg --import /tmp/key.asc 2>&1 && \
 	gpg --verify /tmp/$S6_FILE.sig /tmp/$S6_FILE 2>&1 && \
 	tar xfz /tmp/$S6_FILE -C / && \
-	chmod +x /app/* && \
-	# Install the Node.js actuator
-	npm --prefix /app/actuator install && \
 	# Install the speedtest package
 	pip3 install speedtest-cli
+
+COPY root/app /app
+COPY root/etc/cont-init.d /etc/cont-init.d
+COPY root/etc/services.d /etc/services.d
+
+RUN chmod +x /app/* && \
+	# Install the Node.js actuator
+	npm --prefix /app/actuator install
 
 # Reuse a volume to prevent downloading VPN configs over and over again
 VOLUME ["/ovpn"]
@@ -58,7 +60,7 @@ VOLUME ["/ovpn"]
 EXPOSE 3000/tcp
 EXPOSE 3001/tcp
 
-# Health check by trying to connect to GitHub with timeouts.
+# Health check by trying to connect to a test URL with timeouts.
 # All network activity must go through the VPN, so if TUN
 # is down, then no network and the health check fails.
 HEALTHCHECK --start-period=10s --interval=20s --retries=3 CMD curl \
