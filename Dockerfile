@@ -15,7 +15,8 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
     MAX_LOAD=70 \
     OPENVPN_OPTS="" \
     TEST_URL="https://1.1.1.1/" \
-    AUTH_FILE="/vpn/auth"
+    AUTH_FILE="/vpn/auth" \
+    USED_VPNS_FILE="/usedvpns/vpns.txt"
 
 # The s6 process supervisor
 ARG S6_FILE=s6-overlay-armhf.tar.gz
@@ -54,7 +55,12 @@ RUN chmod +x /app/* && \
 	npm --no-package-lock install
 
 # Reuse a volume to prevent downloading VPN configs over and over again
-VOLUME ["/ovpn"]
+VOLUME /ovpn
+# Track used VPNs
+VOLUME /usedvpns
+
+# Ensure the used VPNs file is present
+RUN touch $USED_VPNS_FILE
 
 # Expose the web-socket, HTTP ports, and proxy ports
 EXPOSE 3000/tcp

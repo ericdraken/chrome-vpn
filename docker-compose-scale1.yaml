@@ -56,6 +56,7 @@ services:
     volumes:
       - ./.chromium.sh:/app/chromium/chromium.sh:ro
       - /dev/shm:/dev/shm # Use shared memory with the host
+      - ./usedvpns:/usedvpns
     tmpfs:
       - /tmp
     env_file:

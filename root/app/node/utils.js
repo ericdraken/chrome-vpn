@@ -29,7 +29,7 @@ const downloadOVPNFiles = async (ovpnUrl, ovpnFolder) => {
         });
 };
 
-const getRandomVPNConfig = async (apiUrl, countries, protocol, category, maxLoad, ovpnFolder) => {
+const getRandomVPNConfig = async (apiUrl, countries, protocol, category, maxLoad, ovpnFolder, blacklistPsv) => {
     console.log('Finding random VPN server');
 
     // TODO: Make sure server is reachable first or else it will hang
@@ -40,16 +40,7 @@ const getRandomVPNConfig = async (apiUrl, countries, protocol, category, maxLoad
             console.log(`Found ${response.data.length} servers`);
             return {data: response.data};
         })
-        .then((json) => {
-            return jq.run(`[ .data[] | select(.features.${protocol} == true) ]`, json, {
-                input: 'json',
-                output: 'json'
-            })
-                .then((res) => {
-                    console.log(`Found ${res.length} servers with protocol: ${protocol}`);
-                    return {data: res};
-                });
-        })
+        // Country
         .then(async (json) => {
             let filtered = [];
             for (const country of countries.split(",")) {
@@ -64,6 +55,16 @@ const getRandomVPNConfig = async (apiUrl, countries, protocol, category, maxLoad
             }
             return {data: filtered};
         })
+        // Protocol
+        .then((json) => {
+            return jq.run(`[ .data[] | select(.features.${protocol} == true) ]`, json, {
+                input: 'json', output: 'json'
+            }).then((res) => {
+                console.log(`Found ${res.length} servers with protocol: ${protocol}`);
+                return {data: res};
+            });
+        })
+        // Category
         .then((json) => {
             return jq.run(`[ .data[] | select(.categories[].name == "${category}") ]`, json, {
                 input: 'json', output: 'json'
@@ -73,6 +74,7 @@ const getRandomVPNConfig = async (apiUrl, countries, protocol, category, maxLoad
                     return {data: res};
                 });
         })
+        // Max load
         .then((json) => {
             return jq.run(`[ .data[] | select(.load <= ${maxLoad}) ]`, json, {input: 'json', output: 'json'})
                 .then((res) => {
@@ -80,9 +82,27 @@ const getRandomVPNConfig = async (apiUrl, countries, protocol, category, maxLoad
                     return {data: res};
                 });
         })
+        // Fresh VPNs
+        .then((json) => {
+            if (typeof blacklistPsv !== 'string' || blacklistPsv.length < 3) {
+                console.warn(`Blacklist empty. Skipping Used VPN check.`);
+                return json;
+            }
+
+            // e.g. [ .data[] | select(.domain | test("^(ca900|ca872|ca234)") | not) ]
+            return jq.run(`[ .data[] | select(.domain | test("^(${blacklistPsv})") | not) ]`, json, {
+                input: 'json', output: 'json'
+            }).then((res) => {
+                console.log(`Found ${res.length} unused servers.`);
+                if (res.length === 0 && json.data.length > 0) {
+                    throw new Error("No unused VPNs left.");
+                }
+                return {data: res};
+            });
+        })
         .then((json) => {
             shuffle(json.data);
-            let bestVPNs = json.data.slice(0, 10);
+            let bestVPNs = json.data.slice(0, 20);
             bestVPNs.sort((a, b) => a.load - b.load);
             let domains = [];
             console.log("Best randomized servers:\n------------------------");
@@ -100,10 +120,11 @@ const getRandomVPNConfig = async (apiUrl, countries, protocol, category, maxLoad
                     return config;
                 }
             }
-            throw new Error("No valid config was found");
+            throw new Error("No valid config was found.");
         })
         .catch((error) => {
             console.log(error);
+            return false;
         });
 };
 

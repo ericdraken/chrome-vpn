@@ -7,6 +7,7 @@ const openVpnManager = require('node-openvpn');
 const childProcess = require('child_process');
 const process = require('process');
 const axios = require('axios');
+const fs = require('fs');
 
 const apiUrl = process.env.URL_NORDVPN_API;
 const category = process.env.CATEGORY;
@@ -15,25 +16,49 @@ const maxLoad = parseInt(process.env.MAX_LOAD, 10);
 const ovpnUrl = process.env.URL_OVPN_FILES;
 const authFile = process.env.AUTH_FILE;
 const vpnOpts = process.env.OPENVPN_OPTS;
+const usedVPNsFile = process.env.USED_VPNS_FILE;
 const protocol = "openvpn_udp"; // Hard-coded only!
+const ovpnFolder = "/ovpn";
 
 //////////////
-
-let ovpnFolder = "/ovpn";
-// For Windows and testing
-if (process.platform === "win32")
-    ovpnFolder = `${__dirname}${ovpnFolder}`;
 
 const management = {
     host: "127.0.0.1",
     port: 1337
 };
 
+let currentOVPN = '';
+
 downloadOVPNFiles(ovpnUrl, ovpnFolder)
-    .then(() => {
-        return getRandomVPNConfig(apiUrl, countries, protocol, category, maxLoad, ovpnFolder);
+    .then(()=>{
+        // Get used VPNs
+        let blacklistPsv = '';
+        try {
+            blacklistPsv = fs.readFileSync(usedVPNsFile, 'ascii');
+            blacklistPsv = blacklistPsv.replace(/^\|+|\n+|\r+/, ''); // Replace the first pipe, if any
+            console.log(`Used VPNs: ${blacklistPsv}`);
+        } catch(err) {
+            if (err.code === 'ENOENT') {
+                console.log('Used VPNs file not found. Skipping.');
+            } else {
+                console.log(`Used VPNs file error: ${err}`);
+            }
+        }
+        return blacklistPsv;
+    })
+    .then((blacklistPsv) => {
+        return getRandomVPNConfig(apiUrl, countries, protocol, category, maxLoad, ovpnFolder, blacklistPsv);
+    })
+    .then((ovpn)=>{
+        if(typeof ovpn !== 'string') {
+            fs.writeFileSync(usedVPNsFile, '', 'ascii');
+            throw new Error("Didn't get an OVPN config file. Cleared unused VPN list.");
+        }
+        return ovpn;
     })
     .then((ovpn) => {
+        currentOVPN = ovpn;
+
         console.log("Preparing VPN server");
         const args = [
             '--management', management.host, management.port,
@@ -54,7 +79,7 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
         // Close any running OpenVPN daemon processes
         try {
             console.log("Checking for existing OpenVPN daemons");
-            childProcess.execSync('pkill -15 openvpn');
+            childProcess.execSync('pkill -15 openvpn'); // SIGTERM
         } catch (e) {
         }
 
@@ -65,7 +90,7 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
         await new Promise(resolve => setTimeout(resolve, 2000));
         const mgr = openVpnManager.connect({host: management.host, port: management.port});
         mgr
-            .on('connected', function () {
+            .on('connected', () => {
                 console.log("VPN management established")
             })
             .on('console-output', output => {
@@ -81,6 +106,13 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
                                 json = JSON.stringify(json, null, 2);
                             }
                             console.log(`VPN IP information:\n${json}`);
+                        })
+                        .then(()=>{
+                            // Save this VPN to the blacklist for the next run
+                            // e.g. /ovpn/us3097.nordvpn.com.udp.ovpn --> us3097
+                            let vpn = currentOVPN.replace(/^\/.+\/([^.]+).+$/g, '$1');
+                            fs.appendFileSync(usedVPNsFile, `|${vpn}`);
+                            console.log(`Saved ${vpn} to the blacklist.`);
                         })
                         .catch((error) => {
                             console.error(`VPN IP error: ${error}`);
