@@ -13,5 +13,5 @@ fi
 # Create auth_file
 echo "$VPN_USER" > $AUTH_FILE
 echo "$VPN_PASS" >> $AUTH_FILE
-chmod 0600 $auth_file
+chmod 0600 $AUTH_FILE
 exit 0
