@@ -1,3 +1,6 @@
 *.iml
 .idea
 *.env
+node_modules
+ovpn
+package-lock.json

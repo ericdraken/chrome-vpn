@@ -5,6 +5,9 @@ build:
 rebuild:
 	docker build --no-cache -t ericdraken/chrome-vpn:armv7 .
 
+bash:
+	docker-compose run --service-ports --no-deps --rm chrome-vpn bash
+
 up0:
 	docker-compose up --remove-orphan
 

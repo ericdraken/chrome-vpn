@@ -63,9 +63,6 @@ services:
       - ./env/password.env
     environment:
       MAX_CONCURRENT_SESSIONS: 5
-      #FORCE_OVPN: "ca569.nordvpn.com.udp.ovpn" # Good VPN
-      #FORCE_OVPN: "ca708.nordvpn.com.udp.ovpn" # Bad VPN
-      #PROTOCOL: "openvpn_udp"
 
   echo:
     build:

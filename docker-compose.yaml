@@ -3,7 +3,6 @@ version: '3.5'
 services:
   chrome-vpn:
     image: ericdraken/chrome-vpn:armv7
-    restart: unless-stopped
     cap_add:
       - NET_ADMIN # Needed for VPN tunnel adapter
     ports:
@@ -22,7 +21,3 @@ services:
     env_file:
       - ./env/chrome-vpn.env
       - ./env/password.env
-    environment:
-      MAX_CONCURRENT_SESSIONS: 5
-      FORCE_OVPN: "ca569.nordvpn.com.udp.ovpn"
-      PROTOCOL: "openvpn_udp"

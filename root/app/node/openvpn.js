@@ -6,6 +6,7 @@ const {getRandomVPNConfig, downloadOVPNFiles} = require('./utils');
 const openVpnManager = require('node-openvpn');
 const childProcess = require('child_process');
 const process = require('process');
+const axios = require('axios');
 
 const apiUrl = process.env.URL_NORDVPN_API;
 const category = process.env.CATEGORY;
@@ -52,7 +53,7 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
         // Close any running OpenVPN daemon processes
         try {
             childProcess.execSync('pkill openvpn');
-            console.log("Terminated previous OpenVPN daemon");
+            console.log("Terminated existing OpenVPN daemon");
         } catch (e) {
         }
 
@@ -70,7 +71,16 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
                 console.log(output)
             })
             .on('state-change', state => {
-                console.log("State: " + state)
+                console.log("State: " + state);
+                if (/CONNECTED,SUCCESS/g.test(state)) {
+                    axios.get("https://ipinfo.io/",  { responseType: 'json' })
+                        .then((response) => {
+                            console.log(`VPN IP information:\n${response.data}\n`);
+                        })
+                        .catch((error) => {
+                            console.error(`VPN IP error: ${error}`);
+                        });
+                }
             })
             .on('error', error => {
                 console.log("Error: " + error)
@@ -81,18 +91,27 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
                 mgr.destroy()
             });
     })
+    .then(() => {
+
+        console.log("Setting up signal handlers");
+        process.on('exit', function () {
+            console.log('VPN process terminated.');
+        });
+
+        process.on('SIGTERM', function () {
+            console.log('Got SIGTERM. Trying to stop VPN server gracefully.');
+            openVpnManager.disconnect()
+                .then(() => {
+                    openVpnManager.destroy();
+                    console.log("VPN server stopped.");
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        });
+
+    })
     .catch((error) => {
         console.log(error);
     });
 
-process.on('SIGINT', function () {
-    console.log('Got SIGINT. Trying to exit VPN server gracefully.');
-    openVpnManager.disconnect()
-        .then(() => {
-            openVpnManager.destroy();
-            console.log("VPN server stopped.");
-        })
-        .catch((error) => {
-            console.log(error);
-        });
-});

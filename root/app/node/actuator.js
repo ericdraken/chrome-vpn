@@ -98,12 +98,12 @@ app.get('/shutdown', (req, res) => {
 
 // Handle 404
 app.use(function (req, res) {
-    res.status(404).send('404: Route not Found');
+    res.status(404).send("404: Route not Found\n");
 });
 
 // Handle 500
 app.use(function (error, req, res, next) {
-    res.status(500).send('500: Internal Server Error');
+    res.status(500).send("500: Internal Server Error\n");
 });
 
 process.on('exit', function () {
@@ -113,8 +113,8 @@ process.on('exit', function () {
     });
 });
 
-process.on('SIGINT', function () {
-    console.log('Got SIGINT. Trying to exit gracefully.');
+process.on('SIGTERM', function () {
+    console.log('Got SIGTERM. Trying to exit gracefully.');
     actuator.close(function () {
         console.log("Express server closed. Asking process to exit.");
         process.exit()
