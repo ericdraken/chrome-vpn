@@ -34,6 +34,7 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
         return getRandomVPNConfig(apiUrl, countries, protocol, category, maxLoad, ovpnFolder);
     })
     .then((ovpn) => {
+        console.log("Preparing VPN server");
         const args = [
             '--management', management.host, management.port,
             '--config', ovpn,
@@ -52,8 +53,8 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
 
         // Close any running OpenVPN daemon processes
         try {
-            childProcess.execSync('pkill openvpn');
-            console.log("Terminated existing OpenVPN daemon");
+            console.log("Checking for existing OpenVPN daemons");
+            childProcess.execSync('pkill -15 openvpn');
         } catch (e) {
         }
 
@@ -70,12 +71,16 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
             .on('console-output', output => {
                 console.log(output)
             })
-            .on('state-change', state => {
+            .on('state-change', async (state) => {
                 console.log("State: " + state);
                 if (/CONNECTED,SUCCESS/g.test(state)) {
-                    axios.get("https://ipinfo.io/",  { responseType: 'json' })
+                    await axios.get("https://ipinfo.io/",  { responseType: 'json' })
                         .then((response) => {
-                            console.log(`VPN IP information:\n${response.data}\n`);
+                            let json = response.data;
+                            if (typeof json !== 'string') {
+                                json = JSON.stringify(json, null, 2);
+                            }
+                            console.log(`VPN IP information:\n${json}`);
                         })
                         .catch((error) => {
                             console.error(`VPN IP error: ${error}`);
@@ -98,9 +103,9 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
             console.log('VPN process terminated.');
         });
 
-        process.on('SIGTERM', function () {
+        process.on('SIGTERM', async () => {
             console.log('Got SIGTERM. Trying to stop VPN server gracefully.');
-            openVpnManager.disconnect()
+            await openVpnManager.disconnect()
                 .then(() => {
                     openVpnManager.destroy();
                     console.log("VPN server stopped.");

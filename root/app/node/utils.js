@@ -30,7 +30,12 @@ const downloadOVPNFiles = async (ovpnUrl, ovpnFolder) => {
 };
 
 const getRandomVPNConfig = async (apiUrl, countries, protocol, category, maxLoad, ovpnFolder) => {
-    return await axios.get(apiUrl)
+    console.log('Finding random VPN server');
+
+    // TODO: Make sure server is reachable first or else it will hang
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    return axios.get(apiUrl, { responseType: 'json', timeout: 5000 })
         .then((response) => {
             console.log(`Found ${response.data.length} servers`);
             return {data: response.data};
