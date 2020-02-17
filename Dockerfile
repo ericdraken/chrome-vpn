@@ -11,15 +11,11 @@ WORKDIR "/"
 # The following is a modified build script from azinchen/nordvpn
 # but modified for the Ubuntu base image instead of Alpine
 ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
-    URL_RECOMMENDED_SERVERS="https://nordvpn.com/wp-admin/admin-ajax.php?action=servers_recommendations" \
     URL_OVPN_FILES="https://downloads.nordcdn.com/configs/archives/servers/ovpn.zip" \
-    PROTOCOL=openvpn_udp \
     MAX_LOAD=70 \
-    RANDOM_TOP=20 \
     OPENVPN_OPTS="" \
-    MIN_RANDOM_SLEEP=1 \
-    MAX_RANDOM_SLEEP=8 \
-    TEST_URL="https://1.1.1.1/"
+    TEST_URL="https://1.1.1.1/" \
+    AUTH_FILE="/vpn/auth"
 
 # The s6 process supervisor
 ARG S6_FILE=s6-overlay-armhf.tar.gz
@@ -29,7 +25,11 @@ ARG S6_VERSION=v1.22.1.0
 RUN rm -f /usr/local/bin/dumb-init && \
 	# Install dependencies
     apt-get -qq update && \
-    apt-get -y install bash curl unzip tar iptables jq openvpn cron privoxy openssl && \
+    apt-get -y install bash curl unzip tar iptables openvpn privoxy openssl jq \
+    # Temporary packages
+    nano telnet \
+    # These are needed for the npm packages:
+    git build-essential autoconf libtool && \
     apt-get -qq clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     # Create the VPN folders
 	mkdir -p /vpn && \
@@ -50,8 +50,8 @@ COPY root/etc/cont-init.d /etc/cont-init.d
 COPY root/etc/services.d /etc/services.d
 
 RUN chmod +x /app/* && \
-	# Install the Node.js actuator
-	npm --prefix /app/actuator install
+	cd /app/node && \
+	npm --no-package-lock install
 
 # Reuse a volume to prevent downloading VPN configs over and over again
 VOLUME ["/ovpn"]

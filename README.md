@@ -29,12 +29,8 @@ Container images are configured using environment variables passed at runtime.
  * `CATEGORY`          - Use servers from specific categories (IE P2P;Anti DDoS). Several categories can be selected using semicolon. Allowed categories are:
    * `Dedicated IP`
    * `Double VPN`
-   * `Obfuscated Servers`
    * `P2P`
    * `Standard VPN servers`
- * `PROTOCOL`          - Specify OpenVPN protocol. Only one protocol can be selected. Allowed protocols are:
-   * `openvpn_udp`
-   * `openvpn_tcp`
  * `RANDOM_TOP`        - Place n servers from filtered list in random order. Useful with `RECREATE_VPN_CRON`.
  * `VPN_USER`          - User for NordVPN account.
  * `VPN_PASS`          - Password for NordVPN account.

@@ -1,0 +1,11 @@
+#!/usr/bin/with-contenv bash
+
+if [ ! -d "/dev/net" ]; then
+  echo "$(date '+%c') Creating network device classification in /dev"
+  mkdir /dev/net
+fi
+
+if [ ! -c "/dev/net/tun" ]; then
+  echo "$(date '+%c') Creating VPN tunnel adapter"
+  mknod -m 0666 /dev/net/tun c 10 200
+fi

@@ -16,3 +16,9 @@ listen-address 0.0.0.0:3001
    debug  8192 # Non-fatal errors
 #  debug 32768 # log all data read from the network
 #  debug 65536 # Log the applying actions
+
+#keep-alive-timeout 1
+default-server-timeout 120
+connection-sharing 0
+socket-timeout 120
+max-client-connections 50

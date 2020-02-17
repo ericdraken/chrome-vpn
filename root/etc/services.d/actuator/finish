@@ -1,4 +1,4 @@
 #!/usr/bin/with-contenv sh
 
-# Killing container due to VPN failure
+# Killing container due to Actuator service failure
 s6-svscanctl -t /var/run/s6/services
