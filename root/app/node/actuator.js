@@ -80,9 +80,25 @@ app.get('/region', async (req, res) => {
 
 // Restart the VPN client to pick up a new endpoint
 // app.get('/randomvpn', auth, async (req, res) => {
-app.get('/randomvpn', async (req, res) => {
-    res.writeHead(200, {"Content-Type": "text/plain"});
-    await shellcmd('s6-svc -t /var/run/s6/services/openvpn', res);
+app.get('/randomvpn', (req, res) => {
+    child.execSync('s6-svc -t /var/run/s6/services/openvpn');
+    let newIP = '';
+    const max = 5;
+    let lastErr = false;
+    for (let i = 0; i < max; i++) {
+        console.log("Actuator trying to get the new IP...");
+        try {
+            newIP = child.execSync('sleep 2 && curl -s --connect-timeout 4 --max-time 5 http://ipinfo.io/ip', {timeout: 7000}).toString();
+            console.log(`Actuator got new IP: ${newIP}`);
+            res.writeHead(200, {"Content-Type": "text/plain"});
+            res.end(newIP);
+            return;
+        } catch (err) {
+            lastErr = err;
+        }
+    }
+    res.writeHead(500, {"Content-Type": "text/plain"});
+    res.end(`Restarted VPN but couldn't get a new IP. Error: ${lastErr.toString()}`);
 });
 
 // Kill the container completely
