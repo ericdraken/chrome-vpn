@@ -60,13 +60,13 @@ app.get(endpoints.status, async (req, res) => {
 // Get the used VPNs
 app.get(endpoints.usedvpns, async (req, res) => {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    await shellcmd(`sed -E 's/\\|/ /g' ${usedVPNsFile} && echo "\n"`, res); // e.g. a|b|c --> a b c
+    await shellcmd(`sed -E 's/\\|/ /g' ${usedVPNsFile} && echo ""`, res); // e.g. a|b|c --> a b c
 });
 
 // Clear the used VPNs list
 app.get(endpoints.clearvpns, async (req, res) => {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    await shellcmd(`echo "" > ${usedVPNsFile} && echo "ok\n"`, res);
+    await shellcmd(`echo "" > ${usedVPNsFile} && echo "ok"`, res);
 });
 
 // Get the VPN service status and return 200 or 500

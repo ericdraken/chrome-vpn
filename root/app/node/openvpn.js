@@ -17,6 +17,7 @@ const ovpnUrl = process.env.URL_OVPN_FILES;
 const authFile = process.env.AUTH_FILE;
 const vpnOpts = process.env.OPENVPN_OPTS;
 const usedVPNsFile = process.env.USED_VPNS_FILE;
+const maxUsedVPNs = process.env.MAX_ALLOWED_USED_VPNS;
 const protocol = "openvpn_udp"; // Hard-coded only!
 const ovpnFolder = "/ovpn";
 
@@ -36,7 +37,14 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
         try {
             usedVPNsListPsv = fs.readFileSync(usedVPNsFile, 'ascii');
             usedVPNsListPsv = usedVPNsListPsv.replace(/^\|+|\n+|\r+/, ''); // Replace the first pipe, if any
-            console.log(`Used VPNs: ${usedVPNsListPsv.replace('|', ', ')}`);
+            console.log(`Used VPNs: ${usedVPNsListPsv.replace('/\|/g', ', ')}`);
+
+            // Reset the used VPNs periodically
+            if (usedVPNsListPsv.split('|').length >= maxUsedVPNs) {
+                console.log(`Clearing the used VPNs list as it exceeded ${maxUsedVPNs} entries.`);
+                fs.writeFileSync(usedVPNsFile, '', 'ascii');
+                usedVPNsListPsv = '';
+            }
         } catch(err) {
             if (err.code === 'ENOENT') {
                 console.log('Used VPNs file not found. Skipping.');
@@ -46,8 +54,8 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
         }
         return usedVPNsListPsv;
     })
-    .then((blacklistPsv) => {
-        return getRandomVPNConfig(apiUrl, countries, protocol, category, maxLoad, ovpnFolder, blacklistPsv);
+    .then((usedVPNsListPsv) => {
+        return getRandomVPNConfig(apiUrl, countries, protocol, category, maxLoad, ovpnFolder, usedVPNsListPsv);
     })
     .then((ovpn)=>{
         if(typeof ovpn !== 'string') {
@@ -93,9 +101,10 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
             .on('connected', () => {
                 console.log("VPN management established")
             })
-            .on('console-output', output => {
-                console.log(output)
-            })
+            // This is too noisy. See state changes and error below instead.
+            // .on('console-output', output => {
+            //     console.log(output)
+            // })
             .on('state-change', async (state) => {
                 console.log("State: " + state);
                 if (/CONNECTED,SUCCESS/g.test(state)) {
@@ -115,17 +124,19 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
                             console.log(`Saved ${vpn} to the used VPNs list.`);
                         })
                         .catch((error) => {
-                            console.error(`VPN IP error: ${error}`);
+                            console.error(`VPN IP: ${error}`);
+                            // Restart the container by ending the manager
+                            mgr.destroy();
                         });
                 }
             })
             .on('error', error => {
-                console.log("Error: " + error)
+                console.error("Error: " + error);
             })
             .on('disconnected', () => {
                 // finally destroy the disconnected manager
                 console.log("VPM management disconnected");
-                mgr.destroy()
+                mgr.destroy();
             });
     })
     .then(() => {

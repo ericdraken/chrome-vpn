@@ -29,7 +29,7 @@ const downloadOVPNFiles = async (ovpnUrl, ovpnFolder) => {
         });
 };
 
-const getRandomVPNConfig = async (apiUrl, countries, protocol, category, maxLoad, ovpnFolder, blacklistPsv) => {
+const getRandomVPNConfig = async (apiUrl, countries, protocol, category, maxLoad, ovpnFolder, usedVPNsListPsv) => {
     console.log('Finding random VPN server');
 
     // TODO: Make sure server is reachable first or else it will hang
@@ -84,13 +84,13 @@ const getRandomVPNConfig = async (apiUrl, countries, protocol, category, maxLoad
         })
         // Fresh VPNs
         .then((json) => {
-            if (typeof blacklistPsv !== 'string' || blacklistPsv.length < 3) {
-                console.warn(`Blacklist empty. Skipping Used VPN check.`);
+            if (typeof usedVPNsListPsv !== 'string' || usedVPNsListPsv.length < 3) {
+                console.warn(`Used VPNs list is empty. Skipping Used VPN check.`);
                 return json;
             }
 
             // e.g. [ .data[] | select(.domain | test("^(ca900|ca872|ca234)") | not) ]
-            return jq.run(`[ .data[] | select(.domain | test("^(${blacklistPsv})") | not) ]`, json, {
+            return jq.run(`[ .data[] | select(.domain | test("^(${usedVPNsListPsv})") | not) ]`, json, {
                 input: 'json', output: 'json'
             }).then((res) => {
                 console.log(`Found ${res.length} unused servers.`);
