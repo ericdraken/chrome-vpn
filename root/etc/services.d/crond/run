@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-
-echo "Starting cron"
-exec /usr/sbin/cron -f

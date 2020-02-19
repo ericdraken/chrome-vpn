@@ -1,0 +1,23 @@
+{
+  "name": "chrome-vpn-manager",
+  "version": "1.0.0",
+  "description": "Chrome+VPN manager",
+  "author": "Eric Draken <ericdraken@gmail.com>",
+  "main": "vpnmanager.js",
+  "license": "GNU General Public License (GPL)",
+  "private": true,
+  "scripts": {
+    "server": "node server.js",
+    "nordvpn": "node nordvpn.js"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "process": "^0.11.10",
+    "@types/express": "^4.17.1",
+    "express": "^4.17.1",
+    "express-basic-auth": "^1.2.0",
+    "node-openvpn": "^0.1.1",
+    "node-jq": "^1.11.0",
+    "adm-zip": "^0.4.14"
+  }
+}

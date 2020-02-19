@@ -15,12 +15,10 @@ services:
     restart: unless-stopped
     depends_on:
       - chrome-vpn1
-      - chrome-vpn2
-      - chrome-vpn3
     environment:
       FRONTEND_PORT: 3000
       BACKENDS_PORT: 3000
-      BACKENDS: "chrome-vpn1 chrome-vpn2 chrome-vpn3"
+      BACKENDS: "chrome-vpn1"
       HTTPCHK: "HEAD /health"
       HTTPCHKPORT: 8080
 
@@ -34,16 +32,14 @@ services:
     restart: unless-stopped
     depends_on:
       - chrome-vpn1
-      - chrome-vpn2
-      - chrome-vpn3
     environment:
       FRONTEND_PORT: 3001
       BACKENDS_PORT: 3001
-      BACKENDS: "chrome-vpn1 chrome-vpn2 chrome-vpn3"
+      BACKENDS: "chrome-vpn1"
       HTTPCHK: "HEAD /health"
       HTTPCHKPORT: 8080
 
-  chrome-vpn1: &chrome-vpn
+  chrome-vpn1:
     image: ericdraken/chrome-vpn:armv7
     restart: unless-stopped
     cap_add:
@@ -67,13 +63,7 @@ services:
       - ./env/chrome-vpn.env
       - ./env/password.env
     environment:
-      MAX_CONCURRENT_SESSIONS: 2
-
-  chrome-vpn2:
-    <<: *chrome-vpn
-
-  chrome-vpn3:
-    <<: *chrome-vpn
+      MAX_CONCURRENT_SESSIONS: 5
 
   echo:
     build:

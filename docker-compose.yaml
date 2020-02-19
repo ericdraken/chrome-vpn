@@ -3,7 +3,6 @@ version: '3.5'
 services:
   chrome-vpn:
     image: ericdraken/chrome-vpn:armv7
-    restart: unless-stopped
     cap_add:
       - NET_ADMIN # Needed for VPN tunnel adapter
     ports:
@@ -15,14 +14,11 @@ services:
       - "${DNS_SERVER_1:-9.9.9.9}"
       - "${DNS_SERVER_2:-1.1.1.1}"
     volumes:
-      - ./.chromium.sh:/app/chrome/chromium.sh:ro
+      - ./.chromium.sh:/app/chromium/chromium.sh:ro
       - /dev/shm:/dev/shm # Use shared memory with the host
+      - ./usedvpns:/usedvpns
     tmpfs:
       - /tmp
     env_file:
       - ./env/chrome-vpn.env
       - ./env/password.env
-    environment:
-      MAX_CONCURRENT_SESSIONS: 5
-      FORCE_OVPN: "ca569.nordvpn.com.udp.ovpn"
-      PROTOCOL: "openvpn_udp"
