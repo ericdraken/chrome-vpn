@@ -32,11 +32,11 @@ let currentOVPN = '';
 downloadOVPNFiles(ovpnUrl, ovpnFolder)
     .then(()=>{
         // Get used VPNs
-        let blacklistPsv = '';
+        let usedVPNsListPsv = '';
         try {
-            blacklistPsv = fs.readFileSync(usedVPNsFile, 'ascii');
-            blacklistPsv = blacklistPsv.replace(/^\|+|\n+|\r+/, ''); // Replace the first pipe, if any
-            console.log(`Used VPNs: ${blacklistPsv}`);
+            usedVPNsListPsv = fs.readFileSync(usedVPNsFile, 'ascii');
+            usedVPNsListPsv = usedVPNsListPsv.replace(/^\|+|\n+|\r+/, ''); // Replace the first pipe, if any
+            console.log(`Used VPNs: ${usedVPNsListPsv.replace('|', ', ')}`);
         } catch(err) {
             if (err.code === 'ENOENT') {
                 console.log('Used VPNs file not found. Skipping.');
@@ -44,7 +44,7 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
                 console.log(`Used VPNs file error: ${err}`);
             }
         }
-        return blacklistPsv;
+        return usedVPNsListPsv;
     })
     .then((blacklistPsv) => {
         return getRandomVPNConfig(apiUrl, countries, protocol, category, maxLoad, ovpnFolder, blacklistPsv);
@@ -112,7 +112,7 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
                             // e.g. /ovpn/us3097.nordvpn.com.udp.ovpn --> us3097
                             let vpn = currentOVPN.replace(/^\/.+\/([^.]+).+$/g, '$1');
                             fs.appendFileSync(usedVPNsFile, `|${vpn}`);
-                            console.log(`Saved ${vpn} to the blacklist.`);
+                            console.log(`Saved ${vpn} to the used VPNs list.`);
                         })
                         .catch((error) => {
                             console.error(`VPN IP error: ${error}`);
