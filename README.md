@@ -29,14 +29,9 @@ Container images are configured using environment variables passed at runtime.
  * `CATEGORY`          - Use servers from specific categories (IE P2P;Anti DDoS). Several categories can be selected using semicolon. Allowed categories are:
    * `Dedicated IP`
    * `Double VPN`
-   * `Obfuscated Servers`
    * `P2P`
    * `Standard VPN servers`
- * `PROTOCOL`          - Specify OpenVPN protocol. Only one protocol can be selected. Allowed protocols are:
-   * `openvpn_udp`
-   * `openvpn_tcp`
  * `RANDOM_TOP`        - Place n servers from filtered list in random order. Useful with `RECREATE_VPN_CRON`.
- * `RECREATE_VPN_CRON` - Set period of selecting new server in format for crontab file. Disabled by default.
  * `VPN_USER`          - User for NordVPN account.
  * `VPN_PASS`          - Password for NordVPN account.
  * `NETWORK`           - CIDR network (IE 192.168.1.0/24), add a route to allows replies once the VPN is up.
@@ -82,7 +77,7 @@ services:
       - "${DNS_SERVER_1:-9.9.9.9}"
       - "${DNS_SERVER_2:-1.1.1.1}"
     volumes:
-      - ./.chromium.sh:/app/chrome/chromium.sh:ro
+      - ./.chromium.sh:/app/chromium/chromium.sh:ro
       - /dev/shm:/dev/shm # Use shared memory with the host
     tmpfs:
       - /tmp
