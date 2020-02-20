@@ -24,14 +24,12 @@ Excellent details are at the maintainer's repo: [browserless/chrome](https://git
 
 Container images are configured using environment variables passed at runtime.
 
- * `USE_CHROME_STABLE` - Use 'true' to use only the latest stable Chrome release
- * `COUNTRY`           - Use servers from countries in the list (IE Australia;New Zeland). Several countries can be selected using semicolon.
- * `CATEGORY`          - Use servers from specific categories (IE P2P;Anti DDoS). Several categories can be selected using semicolon. Allowed categories are:
+ * `COUNTRIES`         - Use servers from countries in the list (Singapore,Mexico). Several countries can be selected using commas.
+ * `CATEGORY`          - Use servers from a specific category. Allowed categories are:
    * `Dedicated IP`
    * `Double VPN`
    * `P2P`
    * `Standard VPN servers`
- * `RANDOM_TOP`        - Place n servers from filtered list in random order. Useful with `RECREATE_VPN_CRON`.
  * `VPN_USER`          - User for NordVPN account.
  * `VPN_PASS`          - Password for NordVPN account.
  * `NETWORK`           - CIDR network (IE 192.168.1.0/24), add a route to allows replies once the VPN is up.
@@ -44,7 +42,7 @@ Container images are configured using environment variables passed at runtime.
 
 The list of keywords for environment variables might be changed, check the allowed keywords by the following commands:
 
-`COUNTRY`
+`COUNTRIES`
 ```
 curl -s https://api.nordvpn.com/server | jq -c '.[] | .country' | jq -s -a -c 'unique | .[]'
 ```
@@ -107,7 +105,7 @@ You can query these localhost:8080 actuator endpoints for status updates and to 
 * `/ipinfo` - Get the ipinfo.io JSON response
 * `/region` - Get the region of the VPN exit node
 * `/randomvpn` - Restart the VPN client and wait until `/up` is successful: 'ok' or 'failed'
-* `/kill` - Kill the container completely
+* `/shutdown` - Kill the container completely
 * `/speedtest` - Get a JSON result of a speedtest.net test
 
 Actuator endpoints are best hit when using the port 3001 proxy into the container rather than directly trying
