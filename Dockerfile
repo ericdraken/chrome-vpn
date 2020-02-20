@@ -17,7 +17,9 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
     TEST_URL="https://1.1.1.1/" \
     AUTH_FILE="/vpn/auth" \
     USED_VPNS_FILE="/usedvpns/vpns.txt" \
-    MAX_ALLOWED_USED_VPNS=500
+    MAX_ALLOWED_USED_VPNS=500 \
+    CATEGORY="Standard VPN servers" \
+    COUNTRIES="Singapore,Mexico"
 
 # The s6 process supervisor
 ARG S6_FILE=s6-overlay-armhf.tar.gz
