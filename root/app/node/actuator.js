@@ -10,8 +10,6 @@ const app = express();
 
 const usedVPNsFile = process.env.USED_VPNS_FILE;
 
-const actuator = app.listen(8080);
-
 const endpoints = {
     speedtestraw: '/speedtest-raw',
     speedtest: '/speedtest',
@@ -27,6 +25,8 @@ const endpoints = {
     randomvpn: '/randomvpn',
     shutdown: '/shutdown',
 };
+
+const server = app.listen(8080, () => console.log('Actuators running...'));
 
 app.get('/', function (req, res) {
     res.writeHead(200, {"Content-Type": "text/plain"});
@@ -159,10 +159,10 @@ app.get(endpoints.randomvpn, (req, res) => {
 app.get(endpoints.shutdown, (req, res) => {
     res.writeHead(200, {"Content-Type": "text/plain"});
     res.end('ok');
-    // Async kill the container
-    child.exec('sleep 1 && s6-svscanctl -t /var/run/s6/services', function (err, stdout, stderr) {
-        console.log( !!err ? stderr : stdout);
-    });
+    console.log( "\n\n**** Container shutting down now ****\n\n" );
+    // Shut down the actuator, which will trigger a finish script
+    // which will terminate the container
+    shutDown('SIGTERM');
 });
 
 // Handle 404
@@ -182,7 +182,7 @@ process.on('SIGINT', shutDown);
 
 function shutDown(signal) {
     console.log(`Got ${signal}. Trying to exit gracefully.`);
-    actuator.close(() => {
+    server.close(() => {
         console.log("Express server closed. Asking process to exit.");
         process.exit(0)
     });
