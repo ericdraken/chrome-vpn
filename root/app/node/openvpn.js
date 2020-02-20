@@ -32,6 +32,7 @@ let currentOVPN = '';
 
 downloadOVPNFiles(ovpnUrl, ovpnFolder)
     .then(()=>{
+        console.log(`Max allowed used VPNs: ${maxUsedVPNs}`);
         // Get used VPNs
         let usedVPNsListPsv = '';
         try {
