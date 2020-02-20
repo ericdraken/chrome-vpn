@@ -36,13 +36,13 @@ app.get('/', function (req, res) {
 // Get the raw speedtest output
 app.get(endpoints.speedtestraw, async (req, res) => {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    await shellcmd('speedtest-cli --no-upload --bytes --single' , res);
+    await shellcmd('speedtest-cli --timeout 10 --no-upload --bytes --single' , res);
 });
 
 // Get the raw speedtest output
 app.get(endpoints.speedtest, async (req, res) => {
     res.writeHead(200, {"Content-Type": "text/json"});
-    await shellcmd('speedtest-cli --no-upload --json || echo \'{}\'' , res);
+    await shellcmd('speedtest-cli --timeout 10 --no-upload --json || echo \'{}\'' , res);
 });
 
 // Get the VPN service status, up = 1, down = 0
@@ -71,7 +71,9 @@ app.get(endpoints.clearvpns, async (req, res) => {
 
 // Get the VPN service status and return 200 or 500
 app.head(endpoints.health, async (req, res) => {
-    await child.exec('service openvpn status >/dev/null', function (err, stdout, stderr) {
+    await child.exec(
+        'service openvpn status >/dev/null',
+        function (err, stdout, stderr) {
         res.status( !!err ? 500 : 200 ).end();
     })
 });
@@ -93,19 +95,33 @@ app.get(endpoints.up, async (req, res) => {
 // Get the current VPN exit IP
 app.get(endpoints.ip, async (req, res) => {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    await shellcmd('curl http://ipinfo.io/ip', res);
+    await shellcmd('' +
+        'curl ' +
+        '--connect-timeout 5 ' +
+        '--max-time 10 ' +
+        'http://ipinfo.io/ip', res);
 });
 
 // Get the current VPN exit IP
 app.get(endpoints.ipinfo, async (req, res) => {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    await shellcmd('curl http://ipinfo.io/ && echo ""', res);
+    await shellcmd('' +
+        'curl ' +
+        '--connect-timeout 5 ' +
+        '--max-time 10 ' +
+        'http://ipinfo.io/ ' +
+        '&& echo ""', res);
 });
 
 // Get the current VPN region (province or state)
 app.get(endpoints.region, async (req, res) => {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    await shellcmd('curl http://ipinfo.io/region && echo ""', res);
+    await shellcmd('' +
+        'curl ' +
+        '--connect-timeout 5 ' +
+        '--max-time 10 ' +
+        'http://ipinfo.io/region ' +
+        '&& echo ""', res);
 });
 
 // Restart the VPN client to pick up a new endpoint
@@ -118,7 +134,14 @@ app.get(endpoints.randomvpn, (req, res) => {
     for (let i = 0; i < max; i++) {
         console.log("Actuator trying to get the new IP...");
         try {
-            newIP = child.execSync('sleep 2 && curl -s --connect-timeout 4 --max-time 5 http://ipinfo.io/ip', {timeout: 7000}).toString();
+            newIP = child.execSync('' +
+                'sleep 2 && ' +
+                'curl ' +
+                '-s ' +
+                '--connect-timeout 5 ' +
+                '--max-time 10 ' +
+                'http://ipinfo.io/ip', {timeout: 15000}).toString();
+
             console.log(`Actuator got new IP: ${newIP}`);
             res.writeHead(200, {"Content-Type": "text/plain"});
             res.end(newIP);
@@ -152,22 +175,23 @@ app.use(function (error, req, res, next) {
     res.status(500).send("500: Internal Server Error\n");
 });
 
-process.on('exit', function () {
-    console.log('Got exit event. Trying to stop Express server.');
-    app.close(function () {
-        console.log("Express server closed");
-    });
-});
-
-process.on('SIGTERM', function () {
-    console.log('Got SIGTERM. Trying to exit gracefully.');
-    actuator.close(function () {
-        console.log("Express server closed. Asking process to exit.");
-        process.exit()
-    });
-});
+process.on('SIGTERM', shutDown);
+process.on('SIGINT', shutDown);
 
 /// Helpers ///
+
+function shutDown(signal) {
+    console.log(`Got ${signal}. Trying to exit gracefully.`);
+    actuator.close(() => {
+        console.log("Express server closed. Asking process to exit.");
+        process.exit(0)
+    });
+
+    setTimeout(() => {
+        console.error('Could not close the actuator in time. Forcefully shutting down.');
+        process.exit(1);
+    }, 10000);
+}
 
 async function shellcmd(cmd, res) {
     await child.exec(cmd, function (err, stdout, stderr) {
