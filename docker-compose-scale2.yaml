@@ -10,7 +10,7 @@ services:
     restart: always
     image: lostlakkris/autoheal
     environment:
-      - AUTOHEAL_CONTAINER_LABEL=chrome-vpn1,chrome-vpn2
+      - AUTOHEAL_CONTAINER_LABEL=all
       - AUTOHEAL_INTERVAL=10
       - AUTOHEAL_START_PERIOD=30 # Wait for the VPNs to establish
       - AUTOHEAL_DEFAULT_STOP_TIMEOUT=20
