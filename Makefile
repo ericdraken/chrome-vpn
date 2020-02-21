@@ -24,7 +24,7 @@ up3:
 	docker-compose -f docker-compose-scale3.yaml up --remove-orphan
 
 up4:
-	docker-compose -f docker-compose-scale3.yaml up --remove-orphan
+	docker-compose -f docker-compose-scale4.yaml up --remove-orphan
 
 aapl:
 	curl -sLD - -x localhost:3001 https://finance.yahoo.com/quote/AAPL/community?p=AAPL -o /dev/null -w '%{url_effective}'
