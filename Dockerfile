@@ -38,8 +38,8 @@ RUN apt-get -qq clean && rm -rf /var/lib/apt/lists/* /var/tmp/*
     # Create the VPN folders
 RUN mkdir -p /vpn /ovpn 
     # Download the S6 supervisor
-RUN wget https://github.com/just-containers/s6-overlay/releases/download/$S6_VERSION/$S6_FILE -O /tmp/$S6_FILE 
-RUN tar xfz /tmp/$S6_FILE -C 
+RUN wget https://github.com/just-containers/s6-overlay/releases/download/$S6_VERSION/$S6_FILE -O $S6_FILE 
+RUN tar xfz $S6_FILE -C 
 	# Install the speedtest package
 RUN pip3 install speedtest-cli
 
