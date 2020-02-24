@@ -1,10 +1,11 @@
 ARG BASE_IMAGE=ericdraken/browserless-chrome:latest
-ARG S6_FILE=s6-overlay-amd64.tar.gz
-ARG S6_VERSION=v1.22.1.0
 
 FROM ${BASE_IMAGE}
 LABEL maintainer="ericdraken@gmail.com"
 LABEL repo="https://github.com/ericdraken/chrome-vpn"
+
+ARG S6_FILE=s6-overlay-amd64.tar.gz
+ARG S6_VERSION=v1.22.1.0
 
 # Image browserless/chrome drops the user to restricted user `blessuser`.
 # Switch back to root then in the Chrome service call `su -p - blessuser ...`
@@ -38,8 +39,8 @@ RUN apt-get -qq clean && rm -rf /var/lib/apt/lists/* /var/tmp/*
     # Create the VPN folders
 RUN mkdir -p /vpn /ovpn 
     # Download the S6 supervisor
-RUN wget https://github.com/just-containers/s6-overlay/releases/download/$S6_VERSION/$S6_FILE -O $S6_FILE 
-RUN tar xfz $S6_FILE -C 
+RUN wget -q https://github.com/just-containers/s6-overlay/releases/download/$S6_VERSION/$S6_FILE -O s6.tar.gz
+RUN tar xfz s6.tar.gz
 	# Install the speedtest package
 RUN pip3 install speedtest-cli
 
