@@ -28,7 +28,7 @@ jobs:
         env:
             IMAGE_NAME: chrome-vpn
         run: |
-            docker buildx build --platform linux/arm/v7 --tag ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:armv7 --push .
+            docker buildx build --platform linux/arm/v7 --tag ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:armv7 --build-arg S6_FILE=s6-overlay-armhf.tar.gz --build-arg BASE_IMAGE=ericdraken/browserless-chrome:armv7 --push .
 
   build-x86_64:
     runs-on: ubuntu-latest
@@ -42,5 +42,5 @@ jobs:
         env:
             IMAGE_NAME: chrome-vpn
         run: |
-            docker build -t ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:latest --build-arg S6_FILE=s6-overlay-amd64.tar.gz --build-arg BASE_IMAGE=ericdraken/browserless-chrome:latest -f Dockerfile .
+            docker build -t ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:latest -f Dockerfile .
             docker push ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:latest

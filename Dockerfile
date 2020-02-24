@@ -1,5 +1,5 @@
-ARG BASE_IMAGE=ericdraken/browserless-chrome:armv7
-ARG S6_FILE=s6-overlay-armhf.tar.gz
+ARG BASE_IMAGE=ericdraken/browserless-chrome:latest
+ARG S6_FILE=s6-overlay-amd64.tar.gz
 ARG S6_VERSION=v1.22.1.0
 
 FROM ${BASE_IMAGE}
@@ -34,7 +34,7 @@ RUN rm -f /usr/local/bin/dumb-init && \
     nano telnet \
     # These are needed for the npm packages:
     git build-essential autoconf libtool && \
-    apt-get -qq clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    apt-get -qq clean && rm -rf /var/lib/apt/lists/* /var/tmp/* && \
     # Create the VPN folders
 	mkdir -p /vpn && \
     mkdir -p /ovpn && \
