@@ -42,5 +42,5 @@ jobs:
         env:
             IMAGE_NAME: chrome-vpn
         run: |
-            docker build -t ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:latest --build-arg S6_FILE=s6-overlay-amd64.tar.gz --build-arg BASE_IMAGE=ericdraken/browserless-chrome:latest .
+            docker build -t ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:latest --build-arg S6_FILE=s6-overlay-amd64.tar.gz --build-arg BASE_IMAGE=ericdraken/browserless-chrome:latest -f Dockerfile .
             docker push ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:latest
