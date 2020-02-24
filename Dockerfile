@@ -29,7 +29,7 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
 RUN rm -f /usr/local/bin/dumb-init && \
 	# Install dependencies
     apt-get -qq update && \
-    apt-get -y install bash curl unzip tar iptables openvpn privoxy openssl jq
+    apt-get -y install bash curl unzip tar iptables openvpn privoxy openssl jq && \
     # Temporary packages
     nano telnet \
     # These are needed for the npm packages:
