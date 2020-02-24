@@ -3,29 +3,44 @@ on:
   push:
     branches:
       - master
+      - armv7
 jobs:
-  Build:
+  build-armv7:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - name: build
+      - uses: actions/checkout@v2
+      - name: Setup QEMU user-mode emulation
+        run: |-
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v1.0.5
+        with:
+          version: latest
+      - name: Available platforms
+        run: echo ${{ steps.buildx.outputs.platforms }}
+      - name: DockerHub Login
+        run: docker login -u ${{ secrets.DOCKERHUB_USER }} --password-stdin <<< "${{ secrets.DOCKERHUB_KEY }}"
+      - name: Github Package Registry Login
+        run: docker login docker.pkg.github.com -u ${{ secrets.GITHUB_USER }} --password-stdin <<< "${{ secrets.TOKEN }}"
+      - name: Build Docker Image - ARM V7
         env:
-          IMAGE_NAME: chrome-vpn
-          GITHUB_USER: ${{ secrets.GITHUB_USER }}
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
-          DOCKERHUB_KEY: ${{ secrets.DOCKERHUB_KEY }}
+            IMAGE_NAME: chrome-vpn
         run: |
-          echo 'CI Job Start'
-          echo 'DockerHub Registry Login'
-          docker login -u $DOCKERHUB_USER --password-stdin <<< "${{ secrets.DOCKERHUB_KEY }}"
-          echo 'Github Package Registry Login'
-          docker login docker.pkg.github.com -u $GITHUB_USER --password-stdin <<< "${{ secrets.GITHUB_TOKEN }}"
-          echo 'Docker Build...'
-          docker build . --tag $DOCKERHUB_USER/$IMAGE_NAME:latest
-          docker tag $DOCKERHUB_USER/$IMAGE_NAME:latest docker.pkg.github.com/$GITHUB_REPOSITORY/$IMAGE_NAME:latest
-          echo 'Pushing Image to Dockerhub ...'
-          docker push $DOCKERHUB_USER/$IMAGE_NAME:latest
-          echo 'Pushing Image to Github ...'
-          docker push docker.pkg.github.com/$GITHUB_REPOSITORY/$IMAGE_NAME:latest
-          echo 'CI Job Complete'
+            docker buildx build --platform linux/arm/v7 --tag ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:armv7 --push .
+
+  build-x86_64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: DockerHub Login
+        run: docker login -u ${{ secrets.DOCKERHUB_USER }} --password-stdin <<< "${{ secrets.DOCKERHUB_KEY }}"
+      - name: Github Package Registry Login
+        run: docker login docker.pkg.github.com -u ${{ secrets.GITHUB_USER }} --password-stdin <<< "${{ secrets.TOKEN }}"
+      - name: Build Docker Image - X86_64
+        env:
+            IMAGE_NAME: chrome-vpn
+        run: |
+            docker build -t ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:latest --build-arg S6_FILE=s6-overlay-amd64.tar.gz --build-arg BASE_IMAGE=ericdraken/browserless-chrome:latest -f .
+            docker push ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:latest

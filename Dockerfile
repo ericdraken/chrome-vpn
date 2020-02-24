@@ -1,4 +1,8 @@
-FROM ericdraken/browserless-chrome:armv7
+ARG BASE_IMAGE=ericdraken/browserless-chrome:armv7
+ARG S6_FILE=s6-overlay-armhf.tar.gz
+ARG S6_VERSION=v1.22.1.0
+
+FROM ${BASE_IMAGE}
 LABEL maintainer="ericdraken@gmail.com"
 LABEL repo="https://github.com/ericdraken/chrome-vpn"
 
@@ -20,10 +24,6 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
     MAX_ALLOWED_USED_VPNS=500 \
     CATEGORY="Standard VPN servers" \
     COUNTRIES="Singapore,Mexico"
-
-# The s6 process supervisor
-ARG S6_FILE=s6-overlay-armhf.tar.gz
-ARG S6_VERSION=v1.22.1.0
 
 # Remove dumb-init from Chrome
 RUN rm -f /usr/local/bin/dumb-init && \
