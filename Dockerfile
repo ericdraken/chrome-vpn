@@ -34,14 +34,14 @@ RUN rm -f /usr/local/bin/dumb-init && \
     nano telnet \
     # These are needed for the npm packages:
     git build-essential autoconf libtool
-RUN apt-get -qq clean && rm -rf /var/lib/apt/lists/* /var/tmp/* && \
+RUN apt-get -qq clean && rm -rf /var/lib/apt/lists/* /var/tmp/*
     # Create the VPN folders
-	mkdir -p /vpn /ovpn && \
+RUN mkdir -p /vpn /ovpn 
     # Download the S6 supervisor
-    wget https://github.com/just-containers/s6-overlay/releases/download/$S6_VERSION/$S6_FILE -O /tmp/$S6_FILE && \
-	tar xfz /tmp/$S6_FILE -C / && \
+RUN wget https://github.com/just-containers/s6-overlay/releases/download/$S6_VERSION/$S6_FILE -O /tmp/$S6_FILE 
+RUN tar xfz /tmp/$S6_FILE -C 
 	# Install the speedtest package
-	pip3 install speedtest-cli
+RUN pip3 install speedtest-cli
 
 COPY root/app /app
 COPY root/etc/cont-init.d /etc/cont-init.d
