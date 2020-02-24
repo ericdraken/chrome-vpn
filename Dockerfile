@@ -29,22 +29,16 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
 RUN rm -f /usr/local/bin/dumb-init && \
 	# Install dependencies
     apt-get -qq update && \
-    apt-get -y install bash curl unzip tar iptables openvpn privoxy openssl jq \
+    apt-get -y install bash curl unzip tar iptables openvpn privoxy openssl jq
     # Temporary packages
     nano telnet \
     # These are needed for the npm packages:
-    git build-essential autoconf libtool && \
-    apt-get -qq clean && rm -rf /var/lib/apt/lists/* /var/tmp/* && \
+    git build-essential autoconf libtool
+RUN apt-get -qq clean && rm -rf /var/lib/apt/lists/* /var/tmp/* && \
     # Create the VPN folders
-	mkdir -p /vpn && \
-    mkdir -p /ovpn && \
+	mkdir -p /vpn /ovpn && \
     # Download the S6 supervisor
     wget https://github.com/just-containers/s6-overlay/releases/download/$S6_VERSION/$S6_FILE -O /tmp/$S6_FILE && \
-    wget https://github.com/just-containers/s6-overlay/releases/download/$S6_VERSION/$S6_FILE.sig -O /tmp/$S6_FILE.sig && \
-    wget https://keybase.io/justcontainers/key.asc -O /tmp/key.asc && \
-    # Verify the S6 signature
-    gpg --import /tmp/key.asc 2>&1 && \
-	gpg --verify /tmp/$S6_FILE.sig /tmp/$S6_FILE 2>&1 && \
 	tar xfz /tmp/$S6_FILE -C / && \
 	# Install the speedtest package
 	pip3 install speedtest-cli
