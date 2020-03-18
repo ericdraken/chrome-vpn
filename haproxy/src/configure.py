@@ -25,6 +25,7 @@ LOG_LEVEL = os.environ.get('LOG_LEVEL', 'notice')
 TIMEOUT_CONNECT = os.environ.get('TIMEOUT_CONNECT', '5000')
 TIMEOUT_CLIENT = os.environ.get('TIMEOUT_CLIENT', '50000')
 TIMEOUT_SERVER = os.environ.get('TIMEOUT_SERVER', '50000')
+DISPATCH_RETRIES = os.environ.get('DISPATCH_RETRIES', '5')
 HTTPCHK = os.environ.get('HTTPCHK', 'HEAD /')
 HTTPCHKPORT = os.environ.get('HTTPCHKPORT', '80')
 INTER = os.environ.get('INTER', '10s')
@@ -67,7 +68,7 @@ backend_conf = Template("""
 cookies = "cookie \\\"@@value@@\\\""
 
 backend_conf_plus = Template("""
-    server $name-$index $host:$port $cookies check port $httpchkport
+    server $name-$index $host:$port $cookies check on-marked-down shutdown-sessions port $httpchkport
 """)
 
 health_conf = """
@@ -207,7 +208,8 @@ with open("/etc/haproxy/haproxy.cfg", "w") as configuration:
             LOG_LEVEL=LOG_LEVEL,
             TIMEOUT_CLIENT=TIMEOUT_CLIENT,
             TIMEOUT_CONNECT=TIMEOUT_CONNECT,
-            TIMEOUT_SERVER=TIMEOUT_SERVER
+            TIMEOUT_SERVER=TIMEOUT_SERVER,
+            DISPATCH_RETRIES=DISPATCH_RETRIES
         )
 
         configuration.write(conf)

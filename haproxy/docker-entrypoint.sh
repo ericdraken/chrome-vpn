@@ -58,6 +58,7 @@ if ! test -e /etc/haproxy/haproxy.cfg; then
   if [ ! -z "$TIMEOUT_CLIENT" ]; then echo "export TIMEOUT_CLIENT=\"$TIMEOUT_CLIENT\"" >>/etc/environment; fi
   if [ ! -z "$TIMEOUT_CONNECT" ]; then echo "export TIMEOUT_CONNECT=\"$TIMEOUT_CONNECT\"" >>/etc/environment; fi
   if [ ! -z "$TIMEOUT_SERVER" ]; then echo "export TIMEOUT_SERVER=\"$TIMEOUT_SERVER\"" >>/etc/environment; fi
+  if [ ! -z "$DISPATCH_RETRIES" ]; then echo "export DISPATCH_RETRIES=\"$DISPATCH_RETRIES\"" >>/etc/environment; fi
 fi
 
 # Start logging

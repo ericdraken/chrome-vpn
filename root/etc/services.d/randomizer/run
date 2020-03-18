@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+echo "Starting randomizer"
+while true ; do /app/randomizer/randomizer.sh & sleep 5 ; done

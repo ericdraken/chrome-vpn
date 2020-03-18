@@ -11,20 +11,31 @@ const app = express();
 const usedVPNsFile = process.env.USED_VPNS_FILE;
 
 const endpoints = {
+    // Connection speed tests
     speedtestraw: '/speedtest-raw',
     speedtest: '/speedtest',
-    zygotes: '/zygotes',
-    status: '/status',
+
+    // VPN randomization and usage
+    randomvpn: '/randomvpn',
     usedvpns: '/usedvpns',
     clearvpns: '/clearvpns',
+
+    // Health and status
     health: '/health', // HEAD
     up: '/up',
+    status: '/status',
+
+    // VPN IP info
     ip: '/ip',
     ipinfo: '/ipinfo',
     region: '/region',
-    randomvpn: '/randomvpn',
+
+    // Packet counter and set randomization trigger
     packets: '/packets',
-    shutdown: '/shutdown',
+
+    // Misc
+    zygotes: '/zygotes',
+    shutdown: '/shutdown'
 };
 
 const server = app.listen(8080, () => console.log('Actuators running...'));
@@ -159,7 +170,7 @@ app.get(endpoints.randomvpn, (req, res) => {
 // Get the number of tun0 packets through the VPN
 app.get(endpoints.packets, (req, res) => {
     try {
-        let count = child.execSync('iptables -L -vxn | grep -m 1 tun0 | grep -m 1 -Eo \'^\\s*[0-9]{1,6}\'');
+        let count = child.execSync('exec /app/randomizer/reqcount.sh');
         count = count.toString().trim();
         console.log(`Tun0 packet count: ${count}`);
         res.writeHead(200, {"Content-Type": "text/plain"});

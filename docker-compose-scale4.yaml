@@ -59,7 +59,8 @@ services:
       HTTPCHKPORT: 8080
 
   chrome-vpn1: &chrome-vpn
-    image: ericdraken/chrome-vpn:armv7
+    build:
+      context: .
     restart: unless-stopped
     cap_add:
       - NET_ADMIN # Needed for VPN tunnel adapter
