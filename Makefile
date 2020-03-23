@@ -14,28 +14,28 @@ up1:
 down1:
 	docker-compose -f docker-compose-scale1.yaml down
 logs1:
-	docker-compose -f docker-compose-scale1.yaml logs -f
+	docker-compose -f docker-compose-scale1.yaml logs -f --tail 1000
 
 up2:
 	docker-compose -f docker-compose-scale2.yaml up --remove-orphan -d
 down2:
 	docker-compose -f docker-compose-scale2.yaml down
 logs2:
-	docker-compose -f docker-compose-scale2.yaml logs -f
+	docker-compose -f docker-compose-scale2.yaml logs -f --tail 1000
 
 up3:
 	docker-compose -f docker-compose-scale3.yaml up --remove-orphan -d
 down3:
 	docker-compose -f docker-compose-scale3.yaml down
 logs3:
-	docker-compose -f docker-compose-scale3.yaml logs -f
+	docker-compose -f docker-compose-scale3.yaml logs -f --tail 1000
 
 up4:
 	docker-compose -f docker-compose-scale4.yaml up --remove-orphan -d
 down4:
 	docker-compose -f docker-compose-scale4.yaml down
 logs4:
-	docker-compose -f docker-compose-scale4.yaml logs -f
+	docker-compose -f docker-compose-scale4.yaml logs -f --tail 1000
 
 aapl:
 	curl -sLD - -x localhost:3001 https://finance.yahoo.com/quote/AAPL/community?p=AAPL -o /dev/null -w '%{url_effective}'
