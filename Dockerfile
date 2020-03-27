@@ -53,7 +53,7 @@ COPY root/app /app
 COPY root/etc/cont-init.d /etc/cont-init.d
 COPY root/etc/services.d /etc/services.d
 
-RUN chmod +x /app/* && \
+RUN find /app -type f -name "*.sh" | xargs chmod u+x && \
 	cd /app/node && \
 	npm --no-package-lock install
 

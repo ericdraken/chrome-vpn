@@ -11,19 +11,31 @@ const app = express();
 const usedVPNsFile = process.env.USED_VPNS_FILE;
 
 const endpoints = {
+    // Connection speed tests
     speedtestraw: '/speedtest-raw',
     speedtest: '/speedtest',
-    zygotes: '/zygotes',
-    status: '/status',
+
+    // VPN randomization and usage
+    randomvpn: '/randomvpn',
     usedvpns: '/usedvpns',
     clearvpns: '/clearvpns',
+
+    // Health and status
     health: '/health', // HEAD
     up: '/up',
+    status: '/status',
+
+    // VPN IP info
     ip: '/ip',
     ipinfo: '/ipinfo',
     region: '/region',
-    randomvpn: '/randomvpn',
-    shutdown: '/shutdown',
+
+    // Packet counter and set randomization trigger
+    packets: '/packets',
+
+    // Misc
+    zygotes: '/zygotes',
+    shutdown: '/shutdown'
 };
 
 const server = app.listen(8080, () => console.log('Actuators running...'));
@@ -127,7 +139,8 @@ app.get(endpoints.region, async (req, res) => {
 // Restart the VPN client to pick up a new endpoint
 // app.get('/randomvpn', auth, async (req, res) => {
 app.get(endpoints.randomvpn, (req, res) => {
-    child.execSync('s6-svc -t /var/run/s6/services/openvpn');
+    // Clear the iptables packet counters
+    child.execSync('iptables -Z && s6-svc -t /var/run/s6/services/openvpn');
     let newIP = '';
     const max = 5;
     let lastErr = false;
@@ -138,9 +151,9 @@ app.get(endpoints.randomvpn, (req, res) => {
                 'sleep 2 && ' +
                 'curl ' +
                 '-s ' +
-                '--connect-timeout 5 ' +
-                '--max-time 10 ' +
-                'http://ipinfo.io/ip', {timeout: 15000}).toString();
+                '--connect-timeout 10 ' +
+                '--max-time 20 ' +
+                'http://ipinfo.io/ip', {timeout: 30000}).toString();
 
             console.log(`Actuator got new IP: ${newIP}`);
             res.writeHead(200, {"Content-Type": "text/plain"});
@@ -152,6 +165,20 @@ app.get(endpoints.randomvpn, (req, res) => {
     }
     res.writeHead(500, {"Content-Type": "text/plain"});
     res.end(`Restarted VPN but couldn't get a new IP. Error: ${lastErr.toString()}`);
+});
+
+// Get the number of tun0 packets through the VPN
+app.get(endpoints.packets, (req, res) => {
+    try {
+        let count = child.execSync('exec /app/randomizer/reqcount.sh');
+        count = count.toString().trim();
+        console.log(`Tun0 packet count: ${count}`);
+        res.writeHead(200, {"Content-Type": "text/plain"});
+        res.end(count);
+    } catch (e) {
+        res.writeHead(500, {"Content-Type": "text/plain"});
+        res.end(`Couldn't get packet count. Error: ${e.toString()}`);
+    }
 });
 
 // Kill the container completely

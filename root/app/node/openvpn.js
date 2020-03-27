@@ -127,8 +127,11 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
                         .catch((error) => {
                             console.error(`VPN IP: ${error}`);
                             // Restart the container by ending the manager
-                            mgr.destroy();
-                        });
+                            openVpnManager.destroy();
+                        })
+                        .catch((error) => {
+                            console.error(`Serious error: ${error}`);
+                        })
                 }
             })
             .on('error', error => {
@@ -137,7 +140,7 @@ downloadOVPNFiles(ovpnUrl, ovpnFolder)
             .on('disconnected', () => {
                 // finally destroy the disconnected manager
                 console.log("VPM management disconnected");
-                mgr.destroy();
+                openVpnManager.destroy();
             });
     })
     .then(() => {
