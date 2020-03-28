@@ -5,19 +5,6 @@ networks:
     driver: bridge
 
 services:
-  # Restart failed containers automatically
-  autoheal:
-    restart: always
-    image: lostlakkris/autoheal
-    environment:
-      - AUTOHEAL_CONTAINER_LABEL=all
-      - AUTOHEAL_INTERVAL=10
-      - AUTOHEAL_START_PERIOD=30 # Wait for the VPNs to establish
-      - AUTOHEAL_DEFAULT_STOP_TIMEOUT=20
-      - CURL_TIMEOUT=30
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-
   chrome-haproxy:
     build:
       context: haproxy
@@ -27,11 +14,13 @@ services:
       - "${CHROME_RDP_PORT:-3000}:3000"
     restart: unless-stopped
     depends_on:
-      - chrome-vpn1
+      - chrome-vpn
     environment:
       FRONTEND_PORT: 3000
       BACKENDS_PORT: 3000
-      BACKENDS: "chrome-vpn1"
+      BACKENDS: "chrome-vpn"
+      DNS_ENABLED: "true"
+      LOG_LEVEL: "info"
       HTTPCHK: "HEAD /health"
       HTTPCHKPORT: 8080
 
@@ -44,17 +33,19 @@ services:
       - "${PROXY_PORT:-3001}:3001"
     restart: unless-stopped
     depends_on:
-      - chrome-vpn1
+      - chrome-vpn
     environment:
       FRONTEND_PORT: 3001
       BACKENDS_PORT: 3001
-      BACKENDS: "chrome-vpn1"
+      BACKENDS: "chrome-vpn"
+      DNS_ENABLED: "true"
+      LOG_LEVEL: "info"
       HTTPCHK: "HEAD /health"
       HTTPCHKPORT: 8080
 
-  chrome-vpn1:
-    build:
-      context: .
+  # This service can be scaled. Example: ... up --scale chrome-vpn=3
+  chrome-vpn:
+    image: ericdraken/chrome-vpn:armv7
     restart: unless-stopped
     cap_add:
       - NET_ADMIN # Needed for VPN tunnel adapter
@@ -69,6 +60,7 @@ services:
       - "${DNS_SERVER_2:-1.1.1.1}"
     volumes:
       - ./.chromium.sh:/app/chromium/chromium.sh:ro
+      - ./privoxy.conf:/etc/services.d/privoxy/config:ro
       - /dev/shm:/dev/shm # Use shared memory with the host
       - ./usedvpns:/usedvpns
     tmpfs:
@@ -77,7 +69,7 @@ services:
       - ./env/chrome-vpn.env
       - ./env/password.env
     environment:
-      MAX_CONCURRENT_SESSIONS: 5
+      MAX_CONCURRENT_SESSIONS: 1
 
   echo:
     build:
