@@ -40,6 +40,14 @@ const endpoints = {
 
 const server = app.listen(8080, () => console.log('Actuators running...'));
 
+const curlBase =
+    'curl ' +
+    '--connect-timeout 15 ' +
+    '--max-time 20 ' +
+    '--silent ';
+
+const externalIpEndpoint = `https://1.1.1.1/cdn-cgi/trace | awk -F= '/ip/ { print $2 }'`;
+
 app.get('/', function (req, res) {
     res.writeHead(200, {"Content-Type": "text/plain"});
     res.end(`Use one of these endpoints: ${Object.values(endpoints).join(', ')}\n`);
@@ -93,46 +101,33 @@ app.head(endpoints.health, async (req, res) => {
 // Get the VPN connectivity status, up = 1, down = 0
 app.get(endpoints.up, async (req, res) => {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    await shellcmd('' +
-        'curl ' +
-        '--connect-timeout 20 ' +
-        '--max-time 30 ' +
+    await shellcmd(curlBase +
         '--head ' +
         '--fail ' +
-        '--silent ' +
         '--output /dev/null ' +
-        '$TEST_URL 2>/dev/null ; echo $(($? == 0))', res);
+        '$TEST_URL ' +
+        '2>/dev/null ; echo $(($? == 0))', res);
 });
 
 // Get the current VPN exit IP
 app.get(endpoints.ip, async (req, res) => {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    await shellcmd('' +
-        'curl ' +
-        '--connect-timeout 5 ' +
-        '--max-time 10 ' +
-        'http://ipinfo.io/ip', res);
+    await shellcmd(curlBase + externalIpEndpoint, res);
 });
 
 // Get the current VPN exit IP
 app.get(endpoints.ipinfo, async (req, res) => {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    await shellcmd('' +
-        'curl ' +
-        '--connect-timeout 5 ' +
-        '--max-time 10 ' +
-        'http://ipinfo.io/ ' +
+    await shellcmd(curlBase +
+        'https://ipinfo.io/ ' +
         '&& echo ""', res);
 });
 
 // Get the current VPN region (province or state)
 app.get(endpoints.region, async (req, res) => {
     res.writeHead(200, {"Content-Type": "text/plain"});
-    await shellcmd('' +
-        'curl ' +
-        '--connect-timeout 5 ' +
-        '--max-time 10 ' +
-        'http://ipinfo.io/region ' +
+    await shellcmd(curlBase +
+        'https://ipinfo.io/region ' +
         '&& echo ""', res);
 });
 
@@ -147,13 +142,8 @@ app.get(endpoints.randomvpn, (req, res) => {
     for (let i = 0; i < max; i++) {
         console.log("Actuator trying to get the new IP...");
         try {
-            newIP = child.execSync('' +
-                'sleep 2 && ' +
-                'curl ' +
-                '-s ' +
-                '--connect-timeout 10 ' +
-                '--max-time 20 ' +
-                'http://ipinfo.io/ip', {timeout: 30000}).toString();
+            newIP = child.execSync('sleep 2 && ' + curlBase + externalIpEndpoint,
+                {timeout: 30000}).toString();
 
             console.log(`Actuator got new IP: ${newIP}`);
             res.writeHead(200, {"Content-Type": "text/plain"});
