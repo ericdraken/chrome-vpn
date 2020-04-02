@@ -21,33 +21,41 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
     CATEGORY="Standard VPN servers" \
     COUNTRIES="Singapore,Mexico"
 
-# The s6 process supervisor
-ARG S6_FILE=s6-overlay-armhf.tar.gz
+# The s6 process supervisor - x86_64 by default
+ARG S6_FILE=s6-overlay-amd64.tar.gz
 ARG S6_VERSION=v1.22.1.0
 
-# Remove dumb-init from Chrome
-RUN rm -f /usr/local/bin/dumb-init && \
+# Prefer wget over ADD in order to verify the signature
+RUN \
+	# Download the S6 supervisor
+	wget https://github.com/just-containers/s6-overlay/releases/download/$S6_VERSION/$S6_FILE -O /tmp/$S6_FILE && \
+	wget https://github.com/just-containers/s6-overlay/releases/download/$S6_VERSION/$S6_FILE.sig -O /tmp/$S6_FILE.sig && \
+	wget https://keybase.io/justcontainers/key.asc -O /tmp/key.asc && \
+	# Verify the S6 signature
+	gpg --import /tmp/key.asc 2>&1 && \
+	gpg --verify /tmp/$S6_FILE.sig /tmp/$S6_FILE 2>&1 && \
+	# Extract the supervisor
+	tar xfz /tmp/$S6_FILE -C /
+
+RUN \
+	# Remove dumb-init from Chrome
+	rm -f /usr/local/bin/dumb-init && \
 	# Install dependencies
     apt-get -qq update && \
     apt-get -y install bash curl unzip tar iptables openvpn privoxy openssl jq \
-    # Temporary packages
+    # Install debugging packages
     nano telnet \
     # These are needed for the npm packages:
     git build-essential autoconf libtool && \
-    apt-get -qq clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-    # Create the VPN folders
-	mkdir -p /vpn && \
-    mkdir -p /ovpn && \
-    # Download the S6 supervisor
-    wget https://github.com/just-containers/s6-overlay/releases/download/$S6_VERSION/$S6_FILE -O /tmp/$S6_FILE && \
-    wget https://github.com/just-containers/s6-overlay/releases/download/$S6_VERSION/$S6_FILE.sig -O /tmp/$S6_FILE.sig && \
-    wget https://keybase.io/justcontainers/key.asc -O /tmp/key.asc && \
-    # Verify the S6 signature
-    gpg --import /tmp/key.asc 2>&1 && \
-	gpg --verify /tmp/$S6_FILE.sig /tmp/$S6_FILE 2>&1 && \
-	tar xfz /tmp/$S6_FILE -C / && \
 	# Install the speedtest package
-	pip3 install speedtest-cli
+	pip3 install speedtest-cli && \
+    # Cleanup
+    apt-get -qq clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Create the VPN folders
+RUN	mkdir -p /vpn && \
+    mkdir -p /ovpn
 
 COPY root/app /app
 COPY root/etc/cont-init.d /etc/cont-init.d
@@ -59,6 +67,7 @@ RUN find /app -type f -name "*.sh" | xargs chmod u+x && \
 
 # Reuse a volume to prevent downloading VPN configs over and over again
 VOLUME /ovpn
+
 # Track used VPNs
 VOLUME /usedvpns
 
