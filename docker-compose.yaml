@@ -14,8 +14,8 @@ services:
       - "${DNS_SERVER_1:-9.9.9.9}"
       - "${DNS_SERVER_2:-1.1.1.1}"
     volumes:
-      - ./.chromium.sh:/app/chromium/chromium.sh:ro
-      - ./privoxy.conf:/etc/services.d/privoxy/config:ro
+      - ./conf/chromium.sh:/app/chromium/chromium.sh:ro
+      - ./conf/privoxy.conf:/etc/services.d/privoxy/config:ro
       - /dev/shm:/dev/shm # Use shared memory with the host
       - ./usedvpns:/usedvpns
     tmpfs:
