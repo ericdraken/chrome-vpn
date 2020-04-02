@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-x86_64:
+    name: Docker Build (x86_64)
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: chrome-vpn
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: DockerHub Login
+        run: docker login -u ${{ secrets.DOCKERHUB_USER }} --password-stdin <<< "${{ secrets.DOCKERHUB_KEY }}"
+      - name: DockerHub Build
+        run: docker build . --tag ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:latest
+      - name: DockerHub Push
+        run: docker push ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:latest
+
+  build-armv7:
+    name: Docker Build (armv7)
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: chrome-vpn
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup QEMU user-mode emulation
+        run: |-
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v1.2.1
+        with:
+          version: latest
+      - name: Available platforms
+        run: echo ${{ steps.buildx.outputs.platforms }}
+      - name: DockerHub Login
+        run: docker login -u ${{ secrets.DOCKERHUB_USER }} --password-stdin <<< "${{ secrets.DOCKERHUB_KEY }}"
+      - name: Build Docker Image - Armv7
+        run: docker buildx build --platform linux/arm/v7 --tag ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:armv7 --build-arg S6_FILE=s6-overlay-armhf.tar.gz --push .
