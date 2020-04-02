@@ -1,8 +1,8 @@
 
 build:
-	docker build -t ericdraken/chrome-vpn:armv7 .
+	docker build -t ericdraken/chrome-vpn:armv7 --build-arg S6_FILE=s6-overlay-armhf.tar.gz .
 rebuild:
-	docker build --no-cache -t ericdraken/chrome-vpn:armv7 .
+	docker build --no-cache -t ericdraken/chrome-vpn:armv7 --build-arg S6_FILE=s6-overlay-armhf.tar.gz .
 bash:
 	docker-compose run --service-ports --no-deps --rm chrome-vpn bash
 
