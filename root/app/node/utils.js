@@ -6,6 +6,27 @@ const jq = require('node-jq');
 const fs = require('fs');
 const axios = require('axios');
 const AdmZip = require('adm-zip');
+const { setupCache } = require('axios-cache-adapter');
+const process = require('process');
+
+// Create `axios-cache-adapter` instance
+const cache = setupCache({
+    maxAge: 60 * 1000,
+    exclude: { query: false },
+    readOnError: (error, request) => {
+        // Attempt reading stale cache data when response status is either 4xx or 5xx
+        return error.response.status >= 400 && error.response.status < 600
+    },
+    // Deactivate `clearOnStale` option so that we can actually read stale cache data
+    clearOnStale: false,
+    clearOnError: true,
+    debug: process.env.AXIOS_CACHE_DEBUG || false
+});
+
+// Create `axios` instance passing the newly created `cache.adapter`
+const api = axios.create({
+    adapter: cache.adapter
+});
 
 /**
  * Ensure the NordVPN OVPN files are downloaded
@@ -15,6 +36,7 @@ const downloadOVPNFiles = async (ovpnUrl, ovpnFolder) => {
         console.log("Download of OVPN files not needed");
         return;
     }
+    // Bypass cache
     await axios.get(ovpnUrl, {responseType: "arraybuffer"})
         .then((response) => {
             const zip = new AdmZip(response.data);
@@ -35,8 +57,15 @@ const getRandomVPNConfig = async (apiUrl, countries, protocol, category, maxLoad
     // TODO: Make sure server is reachable first or else it will hang
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    return axios.get(apiUrl, { responseType: 'json', timeout: 5000 })
+    // Use cache
+    return api.get(apiUrl, { responseType: 'json', timeout: 5000 })
         .then((response) => {
+            if (response.request.fromCache === true) {
+                console.log("Using cached data");
+                if (response.request.stale === true) {
+                    console.log("Using stale cache");
+                }
+            }
             console.log(`Found ${response.data.length} servers`);
             return {data: response.data};
         })
@@ -124,8 +153,18 @@ const getRandomVPNConfig = async (apiUrl, countries, protocol, category, maxLoad
         })
         .catch((error) => {
             console.log(error);
+
+            // Return a random UDP config from the folder
+            console.info("Trying a random OVPN file");
+            const files = fs.readdirSync(ovpnFolder);
+            let randomVpn = files[Math.floor(Math.random() * files.length)];
+            randomVpn = randomVpn.replace(".tcp.", ".udp.");  // Quick UDP selection hack
+            return `${ovpnFolder}/${randomVpn}`;
+        })
+        .catch((error) => {
+            console.log(error);
             return false;
-        });
+        })
 };
 
 /**

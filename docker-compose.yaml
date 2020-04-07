@@ -18,6 +18,7 @@ services:
       - ./conf/privoxy.conf:/etc/services.d/privoxy/config:ro
       - /dev/shm:/dev/shm # Use shared memory with the host
       - ./usedvpns:/usedvpns
+      - ./ovpn:/ovpn
     tmpfs:
       - /tmp
     env_file:
